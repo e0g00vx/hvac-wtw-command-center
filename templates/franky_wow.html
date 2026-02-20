@@ -9484,14 +9484,20 @@ function resetRefTermRanking() {
         <div class="flex flex-wrap items-center gap-4">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">FM Director</label>
-                <select id="heatmapFilterDir" onchange="renderHeatMapTab()" class="border-2 border-gray-200 rounded-lg px-4 py-2 text-sm min-w-[180px] focus:border-sky-500 focus:outline-none">
+                <select id="heatmapFilterDir" onchange="onHeatmapDirChange()" class="border-2 border-gray-200 rounded-lg px-4 py-2 text-sm min-w-[200px] focus:border-sky-500 focus:outline-none">
                     <option value="">All Directors</option>
                 </select>
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">FS Regional</label>
-                <select id="heatmapFilterRm" onchange="renderHeatMapTab()" class="border-2 border-gray-200 rounded-lg px-4 py-2 text-sm min-w-[180px] focus:border-sky-500 focus:outline-none">
+                <select id="heatmapFilterRm" onchange="renderHeatMapTab()" class="border-2 border-gray-200 rounded-lg px-4 py-2 text-sm min-w-[200px] focus:border-sky-500 focus:outline-none">
                     <option value="">All Regionals</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">👉 Jump to Store</label>
+                <select id="heatmapStoreSelect" onchange="jumpToStore()" class="border-2 border-sky-300 bg-sky-50 rounded-lg px-4 py-2 text-sm min-w-[200px] focus:border-sky-500 focus:outline-none font-medium">
+                    <option value="">Select a store...</option>
                 </select>
             </div>
             <div class="ml-auto flex items-center gap-4">
@@ -9951,6 +9957,8 @@ window.switchTab = function(tab) {
 // ═════════════════════════════════════════════════════════════════════════════════════════════════
 let heatMapInstance = null;
 let heatMapFiltersPopulated = false;
+let heatMapMarkers = {}; // Store markers by store number for jump-to functionality
+let heatMapStoreCoords = {}; // Store coords by store number
 
 const CITY_COORDS = {
     'HOUSTON': [29.76, -95.37], 'DALLAS': [32.78, -96.80], 'AUSTIN': [30.27, -97.74],
@@ -9966,12 +9974,23 @@ const CITY_COORDS = {
     'CARROLLTON': [32.95, -96.89], 'GRAND PRAIRIE': [32.75, -96.99], 'LONGVIEW': [32.50, -94.74]
 };
 
-function getCityCoords(city) {
+function getCityCoords(city, storeNum) {
+    // Use cached coords if available
+    if (storeNum && heatMapStoreCoords[storeNum]) return heatMapStoreCoords[storeNum];
+    
     const c = (city || '').toUpperCase().trim();
-    for (const [name, coords] of Object.entries(CITY_COORDS)) {
-        if (c.includes(name)) return [coords[0] + (Math.random()-0.5)*0.08, coords[1] + (Math.random()-0.5)*0.08];
+    let coords;
+    for (const [name, baseCoords] of Object.entries(CITY_COORDS)) {
+        if (c.includes(name)) {
+            coords = [baseCoords[0] + (Math.random()-0.5)*0.08, baseCoords[1] + (Math.random()-0.5)*0.08];
+            break;
+        }
     }
-    return [30 + Math.random()*5, -99 + Math.random()*8];
+    if (!coords) coords = [30 + Math.random()*5, -99 + Math.random()*8];
+    
+    // Cache it
+    if (storeNum) heatMapStoreCoords[storeNum] = coords;
+    return coords;
 }
 
 function initHeatMapTab() {
@@ -9992,11 +10011,61 @@ function populateHeatMapFilters() {
     if (dirSelect) directors.forEach(d => dirSelect.innerHTML += `<option value="${d}">${d}</option>`);
     if (rmSelect) regionals.forEach(r => rmSelect.innerHTML += `<option value="${r}">${r}</option>`);
     heatMapFiltersPopulated = true;
+    updateStoreDropdown(); // Populate store dropdown
+}
+
+// When Director changes, update store dropdown and re-render
+function onHeatmapDirChange() {
+    updateStoreDropdown();
+    renderHeatMapTab();
+}
+
+// Update store dropdown based on current filters
+function updateStoreDropdown() {
+    const storeSelect = document.getElementById('heatmapStoreSelect');
+    if (!storeSelect || !STORES) return;
+    
+    const dirFilter = document.getElementById('heatmapFilterDir')?.value || '';
+    const rmFilter = document.getElementById('heatmapFilterRm')?.value || '';
+    
+    // Filter stores based on director/regional
+    let filtered = STORES.filter(s => {
+        if (dirFilter && s.dir !== dirFilter) return false;
+        if (rmFilter && s.rm !== rmFilter) return false;
+        return true;
+    }).sort((a, b) => (a.sn || '').toString().localeCompare((b.sn || '').toString(), undefined, {numeric: true}));
+    
+    storeSelect.innerHTML = '<option value="">Select a store...</option>';
+    filtered.forEach(s => {
+        const tnt = parseFloat(s.tnt) || 0;
+        const emoji = tnt >= 95 ? '🟢' : tnt >= 85 ? '🟡' : tnt >= 75 ? '🟠' : '🔴';
+        storeSelect.innerHTML += `<option value="${s.sn}">${emoji} #${s.sn} - ${s.city || 'Unknown'} (${tnt.toFixed(1)}%)</option>`;
+    });
+}
+
+// Jump to selected store on map
+function jumpToStore() {
+    const storeSelect = document.getElementById('heatmapStoreSelect');
+    const storeNum = storeSelect?.value;
+    if (!storeNum || !heatMapInstance) return;
+    
+    const marker = heatMapMarkers[storeNum];
+    const coords = heatMapStoreCoords[storeNum];
+    
+    if (coords) {
+        heatMapInstance.setView(coords, 12, { animate: true });
+        if (marker) {
+            setTimeout(() => marker.openPopup(), 300);
+        }
+    }
 }
 
 function renderHeatMapTab() {
     if (!heatMapInstance || !STORES || STORES.length === 0) return;
+    
+    // Clear existing markers
     heatMapInstance.eachLayer(layer => { if (layer instanceof L.CircleMarker) heatMapInstance.removeLayer(layer); });
+    heatMapMarkers = {};
     
     const dirFilter = document.getElementById('heatmapFilterDir')?.value || '';
     const rmFilter = document.getElementById('heatmapFilterRm')?.value || '';
@@ -10010,7 +10079,8 @@ function renderHeatMapTab() {
     let excellent = 0, good = 0, warning = 0, critical = 0;
     
     filtered.forEach(s => {
-        const [lat, lng] = getCityCoords(s.city);
+        const storeNum = s.sn || '?';
+        const [lat, lng] = getCityCoords(s.city, storeNum);
         const tnt = parseFloat(s.tnt) || 0;
         let color, status;
         if (tnt >= 95) { color = '#10b981'; status = 'Excellent'; excellent++; }
@@ -10018,18 +10088,23 @@ function renderHeatMapTab() {
         else if (tnt >= 75) { color = '#f97316'; status = 'Warning'; warning++; }
         else { color = '#ef4444'; status = 'Critical'; critical++; }
         
-        L.circleMarker([lat, lng], { radius: 10, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9 })
-            .bindPopup(`<div style="font-family:system-ui;min-width:180px">
-                <div style="font-weight:bold">Store #${s.sn || '?'}</div>
-                <div style="color:#666;font-size:12px">${s.city || ''}</div>
-                <div style="background:#f3f4f6;padding:8px;border-radius:6px;text-align:center;margin:8px 0">
-                    <div style="font-size:20px;font-weight:bold;color:${color}">${tnt.toFixed(1)}%</div>
-                    <div style="font-size:11px;color:#666">TnT - ${status}</div>
+        const marker = L.circleMarker([lat, lng], { radius: 12, fillColor: color, color: '#fff', weight: 3, fillOpacity: 0.9 })
+            .bindPopup(`<div style="font-family:system-ui;min-width:200px">
+                <div style="font-weight:bold;font-size:16px">Store #${storeNum}</div>
+                <div style="color:#666;font-size:12px;margin:4px 0">${s.city || ''}</div>
+                <div style="background:#f3f4f6;padding:10px;border-radius:8px;text-align:center;margin:8px 0">
+                    <div style="font-size:24px;font-weight:bold;color:${color}">${tnt.toFixed(1)}%</div>
+                    <div style="font-size:12px;color:#666">TnT Score - ${status}</div>
                 </div>
-                <div style="font-size:11px;color:#666"><strong>Director:</strong> ${s.dir || 'N/A'}<br><strong>Regional:</strong> ${s.rm || 'N/A'}</div>
+                <div style="font-size:12px;color:#666;border-top:1px solid #eee;padding-top:8px">
+                    <div><strong>Director:</strong> ${s.dir || 'N/A'}</div>
+                    <div><strong>Regional:</strong> ${s.rm || 'N/A'}</div>
+                </div>
             </div>`)
-            .bindTooltip(`#${s.sn}: ${tnt.toFixed(1)}%`)
+            .bindTooltip(`#${storeNum}: ${tnt.toFixed(1)}%`, { permanent: false, direction: 'top' })
             .addTo(heatMapInstance);
+        
+        heatMapMarkers[storeNum] = marker;
     });
     
     document.getElementById('healthExcellent').textContent = excellent;
@@ -10038,12 +10113,18 @@ function renderHeatMapTab() {
     document.getElementById('healthCritical').textContent = critical;
     document.getElementById('heatmapStoreCount').textContent = filtered.length;
     
-    if (filtered.length > 0) heatMapInstance.fitBounds(filtered.map(s => getCityCoords(s.city)), { padding: [30, 30] });
+    // Fit bounds to filtered stores
+    if (filtered.length > 0) {
+        const bounds = filtered.map(s => getCityCoords(s.city, s.sn));
+        heatMapInstance.fitBounds(bounds, { padding: [40, 40] });
+    }
 }
 
 function resetHeatmapFilters() {
     document.getElementById('heatmapFilterDir').value = '';
     document.getElementById('heatmapFilterRm').value = '';
+    document.getElementById('heatmapStoreSelect').value = '';
+    updateStoreDropdown();
     renderHeatMapTab();
 }
 
