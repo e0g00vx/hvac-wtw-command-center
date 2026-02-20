@@ -182,7 +182,7 @@ function renderDirectorComparison() {
         <thead>
           <tr class="bg-gradient-to-r from-blue-50 to-indigo-50">
             <th class="p-3 text-left font-bold text-gray-700">Rank</th>
-            <th class="p-3 text-left font-bold text-gray-700">Director</th>
+            <th class="p-3 text-left font-bold text-gray-700">Sn Director</th>
             <th class="p-3 text-left font-bold text-gray-700">Region</th>
             <th class="p-3 text-center font-bold text-gray-700">Stores</th>
             <th class="p-3 text-center font-bold text-gray-700">TnT %</th>
@@ -206,9 +206,9 @@ function renderDirectorComparison() {
         <td class="p-3 font-bold text-lg">${rankIcon}</td>
         <td class="p-3">
           <div class="font-semibold ${isYou ? 'text-amber-700' : 'text-gray-800'}">${d.name}</div>
-          <div class="text-xs text-gray-500">Sr: ${d.sr_director}</div>
+          ${isYou ? '<div class="text-xs text-amber-600">⭐ Your Sn Director</div>' : ''}
         </td>
-        <td class="p-3 font-mono font-bold" style="color: #0053e2">${d.id}</td>
+        <td class="p-3 font-medium text-gray-700">${d.region || d.id}</td>
         <td class="p-3 text-center font-semibold">${d.stores}</td>
         <td class="p-3 text-center">
           <span class="px-3 py-1 rounded-full font-bold text-white" style="background: ${tntColor}">
@@ -503,13 +503,13 @@ function exportDirectorReport() {
     ...SuperState.directorMetrics[d.id]
   }));
   
-  let csv = 'Region,Director,Sr Director,Stores,TnT %,Open WOs,Aged 14+,Comm Loss,Rank\n';
+  let csv = 'ID,Sn Director,Region,Stores,TnT %,Open WOs,Aged 14+,Comm Loss,Rank\n';
   data.forEach(d => {
-    csv += `${d.id},${d.name},${d.sr_director},${d.stores},${d.tnt_avg},${d.wos_open},${d.wos_aged},${d.comm_loss},${d.rank}\n`;
+    csv += `${d.id},${d.name},${d.region},${d.stores},${d.tnt_avg},${d.wos_open},${d.wos_aged},${d.comm_loss},${d.rank}\n`;
   });
   
-  downloadCSV(csv, 'director_comparison.csv');
-  showToast('📊 Director report exported!');
+  downloadCSV(csv, 'sn_director_comparison.csv');
+  showToast('📊 Sn Director report exported!');
 }
 
 function downloadCSV(content, filename) {

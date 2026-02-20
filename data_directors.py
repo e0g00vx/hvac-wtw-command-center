@@ -1,68 +1,57 @@
-"""BU Director & FM Hierarchy Data for HVAC WtW Super Dashboard
+"""Senior Director & FM Hierarchy Data for HVAC WtW Super Dashboard
 Real hierarchy for Facilities Management
 """
 
 # ══════════════════════════════════════════════════════════════════════
-# HIERARCHY: VP → Sr. Director (BU Director) → FM Director → Regional Manager
+# HIERARCHY: VP → Sr. Director → FM Director → Regional Manager
 # ══════════════════════════════════════════════════════════════════════
 
-# BU Directors (Sr. Directors) - B.A. GLASS's peers from Confluence
-BU_DIRECTORS = [
+# Senior Directors (Sn Directors) - B.A. GLASS and peers
+SN_DIRECTORS = [
     {
         "id": "BA", 
         "name": "B.A. GLASS", 
         "title": "Senior Director",
-        "focus_area": "Reports & Metrics (Tableau)",
-        "bu": "Central Region",
-        "is_current": True,  # Your BU Director
+        "region": "Central",
+        "is_current": True,  # Your Sn Director
         "fm_directors": ["FRANKY GONZALEZ"],
     },
     {
-        "id": "BB", 
-        "name": "BRANDON BALLARD", 
-        "title": "Sr Director - HVAC/R Assets",
-        "focus_area": "HVAC/R Asset Strategy",
-        "bu": "HVAC/R Assets",
-        "is_current": False,
-        "fm_directors": [],
-    },
-    {
-        "id": "ED", 
-        "name": "ERIC DALTON", 
-        "title": "Sr Director",
-        "focus_area": "GM Assets Strategy",
-        "bu": "GM Assets",
-        "is_current": False,
-        "fm_directors": [],
-    },
-    {
-        "id": "MM", 
-        "name": "MICHAEL MILLER", 
+        "id": "MB", 
+        "name": "MONIQUE BRENNA", 
         "title": "Senior Director",
-        "focus_area": "Store Space Design",
-        "bu": "Store Design",
+        "region": "West",
         "is_current": False,
         "fm_directors": [],
     },
     {
-        "id": "BN", 
-        "name": "BYRON NEWTON", 
-        "title": "Director",
-        "focus_area": "Design & Prototype (HVAC/R)",
-        "bu": "Design & Prototype",
+        "id": "WB", 
+        "name": "WHITNEY BOX", 
+        "title": "Senior Director",
+        "region": "Northeast",
         "is_current": False,
         "fm_directors": [],
     },
     {
-        "id": "SB", 
-        "name": "SUMIT BATRA", 
-        "title": "Director Facilities",
-        "focus_area": "GM Assets",
-        "bu": "Facilities GM",
+        "id": "LM", 
+        "name": "LAURA MOORE", 
+        "title": "Senior Director",
+        "region": "Southeast",
+        "is_current": False,
+        "fm_directors": [],
+    },
+    {
+        "id": "NP", 
+        "name": "NICK PALIDINO", 
+        "title": "Senior Director",
+        "region": "South",
         "is_current": False,
         "fm_directors": [],
     },
 ]
+
+# Backwards compatibility alias
+BU_DIRECTORS = SN_DIRECTORS
 
 # FM Director under B.A. GLASS (you work for FRANKY who works for B.A.)
 # YOUR hierarchy:
@@ -108,16 +97,18 @@ REGIONAL_MANAGERS = {
     },
 }
 
-# BU Director Performance Metrics (current month - placeholder data)
+# Senior Director Performance Metrics (current month - placeholder data)
 # These would come from BQ if we had access
-BU_DIRECTOR_METRICS = {
+SN_DIRECTOR_METRICS = {
     "BA": {"stores": 187, "tnt_avg": 92.1, "wos_open": 47, "wos_aged": 8, "comm_loss": 12, "rank": 1},
-    "BB": {"stores": 215, "tnt_avg": 90.8, "wos_open": 62, "wos_aged": 14, "comm_loss": 18, "rank": 3},
-    "ED": {"stores": 198, "tnt_avg": 89.5, "wos_open": 71, "wos_aged": 19, "comm_loss": 22, "rank": 5},
-    "MM": {"stores": 156, "tnt_avg": 91.2, "wos_open": 43, "wos_aged": 9, "comm_loss": 11, "rank": 2},
-    "BN": {"stores": 89, "tnt_avg": 88.7, "wos_open": 38, "wos_aged": 12, "comm_loss": 8, "rank": 6},
-    "SB": {"stores": 142, "tnt_avg": 90.1, "wos_open": 55, "wos_aged": 11, "comm_loss": 15, "rank": 4},
+    "MB": {"stores": 195, "tnt_avg": 90.8, "wos_open": 52, "wos_aged": 11, "comm_loss": 15, "rank": 3},
+    "WB": {"stores": 178, "tnt_avg": 91.5, "wos_open": 41, "wos_aged": 7, "comm_loss": 9, "rank": 2},
+    "LM": {"stores": 202, "tnt_avg": 89.2, "wos_open": 68, "wos_aged": 16, "comm_loss": 21, "rank": 5},
+    "NP": {"stores": 168, "tnt_avg": 90.1, "wos_open": 55, "wos_aged": 12, "comm_loss": 14, "rank": 4},
 }
+
+# Backwards compatibility alias
+BU_DIRECTOR_METRICS = SN_DIRECTOR_METRICS
 
 # Historical Month-over-Month Data (last 12 months for B.A. GLASS's region)
 HISTORICAL_TNT = [
@@ -135,15 +126,17 @@ HISTORICAL_TNT = [
     {"month": "Feb 2026", "tnt": 92.1, "wos": 47, "stores": 187},
 ]
 
-# BU Director trend comparison (last 6 months)
-BU_DIRECTOR_TRENDS = {
-    "BA": [87.2, 88.9, 90.2, 91.1, 91.7, 92.1],  # B.A. GLASS - YOUR BU Director
-    "BB": [86.5, 87.8, 89.1, 90.0, 90.5, 90.8],  # Brandon Ballard
-    "ED": [85.2, 86.4, 87.5, 88.4, 89.0, 89.5],  # Eric Dalton
-    "MM": [87.0, 88.2, 89.4, 90.3, 90.8, 91.2],  # Michael Miller
-    "BN": [84.8, 85.9, 86.8, 87.6, 88.2, 88.7],  # Byron Newton
-    "SB": [86.0, 87.2, 88.3, 89.2, 89.7, 90.1],  # Sumit Batra
+# Senior Director trend comparison (last 6 months)
+SN_DIRECTOR_TRENDS = {
+    "BA": [87.2, 88.9, 90.2, 91.1, 91.7, 92.1],  # B.A. GLASS - YOUR Sn Director
+    "MB": [86.5, 87.8, 89.1, 90.0, 90.5, 90.8],  # Monique Brenna
+    "WB": [87.0, 88.2, 89.6, 90.5, 91.0, 91.5],  # Whitney Box
+    "LM": [85.2, 86.4, 87.5, 88.4, 89.0, 89.2],  # Laura Moore
+    "NP": [86.0, 87.2, 88.3, 89.2, 89.7, 90.1],  # Nick Palidino
 }
+
+# Backwards compatibility alias
+BU_DIRECTOR_TRENDS = SN_DIRECTOR_TRENDS
 
 TREND_MONTHS = ["Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26"]
 
@@ -171,6 +164,6 @@ MILESTONES = [
 # ══════════════════════════════════════════════════════════════════════
 # ALIASES FOR BACKWARDS COMPATIBILITY
 # ══════════════════════════════════════════════════════════════════════
-DIRECTORS = BU_DIRECTORS
-DIRECTOR_METRICS = BU_DIRECTOR_METRICS
-DIRECTOR_TRENDS = BU_DIRECTOR_TRENDS
+DIRECTORS = SN_DIRECTORS
+DIRECTOR_METRICS = SN_DIRECTOR_METRICS
+DIRECTOR_TRENDS = SN_DIRECTOR_TRENDS
