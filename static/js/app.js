@@ -25,7 +25,20 @@ const S = {
   refreshInterval: 300,
   countdownSeconds: 300,
   drillDownManager: null,
-  drillDownFSM: null
+  drillDownFSM: null,
+  // Map filter state
+  mapFilters: {
+    equip: '',
+    age: '',
+    mgr: '',
+    problem: '',
+    status: '',
+    tnt: '',
+    storeType: '',
+    hasWO: '',
+    sub: ''
+  },
+  filteredMapWOs: []
 };
 
 let map = null;
@@ -353,14 +366,17 @@ function renderMap() {
   
   if (S.mapLayer === 'ahurtu') {
     renderAhuRtuMap();
+  } else if (S.mapLayer === 'comm') {
+    renderCommLossMap();
   } else {
     renderTnTMap();
   }
   updateMapLegend();
+  updateMapStats();
 }
 
 function renderTnTMap() {
-  const stores = getFilteredStores().filter(s => s.lat && s.lng);
+  const stores = getFilteredMapStores();
   
   stores.forEach(s => {
     const color = getColor(s.tit);
@@ -371,15 +387,17 @@ function renderTnTMap() {
     const titLabel = s.tit != null ? s.tit.toFixed(1) + '%' : 'N/A';
     const wos = S.ahuRtu.filter(w => w.store === s.store).length;
     m.bindTooltip(`<strong>#${s.store}</strong> ${s.city}, ${s.state}<br>TnT: <strong>${titLabel}</strong><br>${s.mgr}${wos ? `<br>🛠️ ${wos} WOs` : ''}`);
-    m.on('click', () => drillDownStore(s.store));
+    m.on('click', () => showMapDrillDown('store', s));
     m.addTo(markerLayer);
   });
 }
 
 function renderAhuRtuMap() {
+  const wos = getFilteredMapWOs();
+  
   // Group WOs by store
   const storeWOs = {};
-  S.ahuRtu.forEach(w => {
+  wos.forEach(w => {
     const store = S.stores.find(s => s.store === w.store);
     if (store && store.lat && store.lng) {
       if (!storeWOs[w.store]) {
@@ -389,12 +407,9 @@ function renderAhuRtuMap() {
     }
   });
   
-  // Filter by manager if needed
   Object.values(storeWOs).forEach(({ store, wos }) => {
-    if (S.filterManager && store.mgr !== S.filterManager) return;
-    
     const maxAge = Math.max(...wos.map(w => w.age_days));
-    const color = maxAge > 14 ? '#ea1100' : maxAge > 7 ? '#f47920' : maxAge > 3 ? '#ffc220' : '#2a8703';
+    const color = maxAge >= 14 ? '#ea1100' : maxAge >= 7 ? '#f47920' : maxAge >= 3 ? '#ffc220' : '#2a8703';
     const radius = wos.length > 3 ? 14 : wos.length > 1 ? 11 : 8;
     
     const m = L.circleMarker([store.lat, store.lng], {
@@ -415,14 +430,30 @@ function renderAhuRtuMap() {
       ${woList}${moreText}
     `, { maxWidth: 300 });
     
-    m.on('click', () => drillDownStore(store.store));
+    m.on('click', () => showMapDrillDown('wo', { store, wos }));
     m.addTo(markerLayer);
   });
-  
-  // Show count
-  const totalStores = Object.keys(storeWOs).length;
-  const totalWOs = S.ahuRtu.length;
-  showToast(`🛠️ Showing ${totalStores} stores with ${totalWOs} AHU/RTU work orders`);
+}
+
+function renderCommLossMap() {
+  S.commLoss.forEach(c => {
+    const store = S.stores.find(s => s.store === c.store);
+    if (!store || !store.lat || !store.lng) return;
+    
+    const color = c.days_offline > 7 ? '#ea1100' : c.days_offline > 3 ? '#f47920' : '#ffc220';
+    const m = L.circleMarker([store.lat, store.lng], {
+      radius: 10, fillColor: color, color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.9
+    });
+    
+    m.bindTooltip(`
+      <strong>#${store.store}</strong> ${store.city}, ${store.state}<br>
+      <span style="color:${color};font-weight:bold">📡 Comm Loss</span><br>
+      Controller: ${c.controller}<br>
+      Offline: <strong>${c.days_offline} days</strong>
+    `);
+    m.on('click', () => showMapDrillDown('store', store));
+    m.addTo(markerLayer);
+  });
 }
 
 function getColor(tit) {
@@ -445,7 +476,188 @@ function setMapLayer(layer, btn) {
   S.mapLayer = layer;
   document.querySelectorAll('#mapLayerBtns .filter-chip').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  
+  // Show/hide filter panels based on layer
+  const ahuFilters = document.getElementById('ahuMapFilters');
+  const tntFilters = document.getElementById('tntMapFilters');
+  
+  if (layer === 'ahurtu') {
+    ahuFilters?.classList.remove('hidden');
+    tntFilters?.classList.add('hidden');
+  } else if (layer === 'tit') {
+    ahuFilters?.classList.add('hidden');
+    tntFilters?.classList.remove('hidden');
+  } else {
+    ahuFilters?.classList.add('hidden');
+    tntFilters?.classList.add('hidden');
+  }
+  
   renderMap();
+}
+
+function applyMapFilters() {
+  // Read all filter values
+  S.mapFilters.equip = document.getElementById('mapFilterEquip')?.value || '';
+  S.mapFilters.age = document.getElementById('mapFilterAge')?.value || '';
+  S.mapFilters.mgr = document.getElementById('mapFilterMgr')?.value || '';
+  S.mapFilters.problem = document.getElementById('mapFilterProblem')?.value || '';
+  S.mapFilters.status = document.getElementById('mapFilterStatus')?.value || '';
+  S.mapFilters.tnt = document.getElementById('mapFilterTnT')?.value || '';
+  S.mapFilters.storeType = document.getElementById('mapFilterType')?.value || '';
+  S.mapFilters.tntMgr = document.getElementById('mapFilterTnTMgr')?.value || '';
+  S.mapFilters.hasWO = document.getElementById('mapFilterHasWO')?.value || '';
+  S.mapFilters.sub = document.getElementById('mapFilterSub')?.value || '';
+  
+  renderMap();
+}
+
+function resetMapFilters() {
+  // Reset all filter dropdowns
+  ['mapFilterEquip', 'mapFilterAge', 'mapFilterMgr', 'mapFilterProblem', 'mapFilterStatus',
+   'mapFilterTnT', 'mapFilterType', 'mapFilterTnTMgr', 'mapFilterHasWO', 'mapFilterSub'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  
+  // Reset state
+  S.mapFilters = { equip: '', age: '', mgr: '', problem: '', status: '', tnt: '', storeType: '', hasWO: '', sub: '' };
+  
+  renderMap();
+  showToast('🔄 Filters reset!');
+}
+
+function getFilteredMapWOs() {
+  let wos = [...S.ahuRtu];
+  
+  // Equipment type filter
+  if (S.mapFilters.equip) {
+    const eq = S.mapFilters.equip.toLowerCase();
+    wos = wos.filter(w => {
+      const equip = (w.equipment || '').toLowerCase();
+      if (eq === 'ahu') return equip.includes('ahu') && !equip.includes('rtu');
+      if (eq === 'rtu') return equip.includes('rtu');
+      if (eq === 'mfc') return equip.includes('mfc');
+      return true;
+    });
+  }
+  
+  // Age filter
+  if (S.mapFilters.age) {
+    switch (S.mapFilters.age) {
+      case 'critical': wos = wos.filter(w => w.age_days >= 14); break;
+      case 'warning': wos = wos.filter(w => w.age_days >= 7 && w.age_days < 14); break;
+      case 'watch': wos = wos.filter(w => w.age_days >= 3 && w.age_days < 7); break;
+      case 'fresh': wos = wos.filter(w => w.age_days < 3); break;
+    }
+  }
+  
+  // Manager filter
+  if (S.mapFilters.mgr) {
+    wos = wos.filter(w => w.mgr === S.mapFilters.mgr);
+  }
+  
+  // Problem filter
+  if (S.mapFilters.problem) {
+    wos = wos.filter(w => (w.problem || '').toLowerCase().includes(S.mapFilters.problem.toLowerCase()));
+  }
+  
+  // Status filter
+  if (S.mapFilters.status) {
+    wos = wos.filter(w => w.status === S.mapFilters.status);
+  }
+  
+  S.filteredMapWOs = wos;
+  return wos;
+}
+
+function getFilteredMapStores() {
+  let stores = [...S.stores].filter(s => s.lat && s.lng);
+  
+  // TnT performance filter
+  if (S.mapFilters.tnt) {
+    switch (S.mapFilters.tnt) {
+      case 'excellent': stores = stores.filter(s => s.tit >= 95); break;
+      case 'good': stores = stores.filter(s => s.tit >= 90 && s.tit < 95); break;
+      case 'watch': stores = stores.filter(s => s.tit >= 85 && s.tit < 90); break;
+      case 'warning': stores = stores.filter(s => s.tit >= 80 && s.tit < 85); break;
+      case 'critical': stores = stores.filter(s => s.tit != null && s.tit < 80); break;
+    }
+  }
+  
+  // Store type filter
+  if (S.mapFilters.storeType) {
+    stores = stores.filter(s => s.store_type === S.mapFilters.storeType);
+  }
+  
+  // Manager filter for TnT
+  if (S.mapFilters.tntMgr) {
+    stores = stores.filter(s => s.mgr === S.mapFilters.tntMgr);
+  }
+  
+  // Has WO filter
+  if (S.mapFilters.hasWO) {
+    const storesWithWOs = new Set(S.ahuRtu.map(w => w.store));
+    if (S.mapFilters.hasWO === 'yes') {
+      stores = stores.filter(s => storesWithWOs.has(s.store));
+    } else {
+      stores = stores.filter(s => !storesWithWOs.has(s.store));
+    }
+  }
+  
+  // Sub-region filter
+  if (S.mapFilters.sub) {
+    stores = stores.filter(s => s.sub === S.mapFilters.sub);
+  }
+  
+  return stores;
+}
+
+function updateMapStats() {
+  if (S.mapLayer === 'ahurtu') {
+    const wos = S.filteredMapWOs;
+    const stores = new Set(wos.map(w => w.store));
+    const critical = wos.filter(w => w.age_days >= 14).length;
+    const avgAge = wos.length ? Math.round(wos.reduce((a, w) => a + w.age_days, 0) / wos.length) : 0;
+    
+    document.getElementById('statTotalWOs').textContent = wos.length;
+    document.getElementById('statStores').textContent = stores.size;
+    document.getElementById('statCritical').textContent = critical;
+    document.getElementById('statAvgAge').textContent = avgAge;
+  } else if (S.mapLayer === 'tit') {
+    const stores = getFilteredMapStores();
+    const withTnT = stores.filter(s => s.tit != null);
+    const avgTnT = withTnT.length ? (withTnT.reduce((a, s) => a + s.tit, 0) / withTnT.length).toFixed(1) : 'N/A';
+    const above95 = withTnT.filter(s => s.tit >= 95).length;
+    const below85 = withTnT.filter(s => s.tit < 85).length;
+    const storesWithWOs = new Set(S.ahuRtu.map(w => w.store));
+    const withWOs = stores.filter(s => storesWithWOs.has(s.store)).length;
+    
+    document.getElementById('statTotalStores').textContent = stores.length;
+    document.getElementById('statAvgTnT').textContent = avgTnT + '%';
+    document.getElementById('statAbove95').textContent = above95;
+    document.getElementById('statBelow85').textContent = below85;
+    document.getElementById('statWithWOs').textContent = withWOs;
+  }
+}
+
+function copyFilteredWOs() {
+  const wos = S.filteredMapWOs.map(w => w.tracking).join('\n');
+  navigator.clipboard.writeText(wos);
+  showToast(`📋 Copied ${S.filteredMapWOs.length} WO numbers!`);
+}
+
+function populateSubRegions() {
+  const subs = [...new Set(S.stores.map(s => s.sub).filter(Boolean))].sort();
+  const sel = document.getElementById('mapFilterSub');
+  if (sel) {
+    sel.innerHTML = '<option value="">All Sub-Regions</option>';
+    subs.forEach(sub => {
+      const opt = document.createElement('option');
+      opt.value = sub;
+      opt.textContent = sub;
+      sel.appendChild(opt);
+    });
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -973,7 +1185,142 @@ function updateShareUrl() {
 // Update share URL on load
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(updateShareUrl, 100);
+  setTimeout(populateSubRegions, 500);
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// MAP DRILL-DOWN PANEL
+// ══════════════════════════════════════════════════════════════════════
+function showMapDrillDown(type, data) {
+  const panel = document.getElementById('mapDrillDown');
+  const title = document.getElementById('drillDownTitle');
+  const content = document.getElementById('drillDownContent');
+  
+  if (!panel) return;
+  panel.classList.remove('hidden');
+  
+  if (type === 'store') {
+    const s = data;
+    const wos = S.ahuRtu.filter(w => w.store === s.store);
+    const comm = S.commLoss.filter(c => c.store === s.store);
+    
+    title.innerHTML = `<span class="text-blue-600">🏢 Store #${s.store}</span> - ${s.city}, ${s.state}`;
+    
+    content.innerHTML = `
+      <div class="grid grid-cols-4 gap-4 mb-4">
+        <div class="bg-blue-50 rounded-lg p-3 text-center">
+          <div class="text-xl font-bold" style="color: ${getColor(s.tit)}">${s.tit ? s.tit.toFixed(1) + '%' : 'N/A'}</div>
+          <div class="text-xs text-gray-500">TnT %</div>
+        </div>
+        <div class="bg-purple-50 rounded-lg p-3 text-center">
+          <div class="text-xl font-bold text-purple-700">${wos.length}</div>
+          <div class="text-xs text-gray-500">Open WOs</div>
+        </div>
+        <div class="bg-orange-50 rounded-lg p-3 text-center">
+          <div class="text-xl font-bold text-orange-700">${comm.length}</div>
+          <div class="text-xs text-gray-500">Comm Loss</div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-3 text-center">
+          <div class="text-sm font-medium text-gray-700">${s.store_type}</div>
+          <div class="text-xs text-gray-500">Type</div>
+        </div>
+      </div>
+      <div class="text-sm text-gray-600 mb-3">
+        <strong>Manager:</strong> ${s.mgr} | <strong>Sub-Region:</strong> ${s.sub}
+      </div>
+      ${wos.length ? `
+        <h5 class="font-bold text-gray-700 mb-2">🛠️ Work Orders</h5>
+        <div class="flex items-center gap-2 mb-2">
+          <button onclick="copyStoreWOs(${s.store})" class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+            📋 Copy ${wos.length} WOs
+          </button>
+        </div>
+        <table class="tbl text-sm">
+          <thead><tr><th>WO #</th><th>Equipment</th><th>Problem</th><th>Age</th><th>Status</th></tr></thead>
+          <tbody>
+            ${wos.map(w => {
+              const ageColor = w.age_days >= 14 ? '#ea1100' : w.age_days >= 7 ? '#f47920' : '#2a8703';
+              return `<tr>
+                <td><a href="https://servicechannel.com/sc/wo/details/${w.tracking}" target="_blank" class="text-blue-600 hover:underline font-mono">${w.tracking}</a></td>
+                <td>${w.equipment}</td>
+                <td>${w.problem}</td>
+                <td class="font-bold" style="color: ${ageColor}">${w.age_days}d</td>
+                <td>${w.status}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      ` : '<div class="text-green-600">✅ No open work orders!</div>'}
+    `;
+  } else if (type === 'wo') {
+    const { store, wos } = data;
+    const maxAge = Math.max(...wos.map(w => w.age_days));
+    
+    title.innerHTML = `<span class="text-purple-600">🛠️ Store #${store.store}</span> - ${wos.length} Work Order${wos.length > 1 ? 's' : ''}`;
+    
+    content.innerHTML = `
+      <div class="grid grid-cols-4 gap-4 mb-4">
+        <div class="bg-purple-50 rounded-lg p-3 text-center">
+          <div class="text-xl font-bold text-purple-700">${wos.length}</div>
+          <div class="text-xs text-gray-500">Total WOs</div>
+        </div>
+        <div class="bg-red-50 rounded-lg p-3 text-center">
+          <div class="text-xl font-bold text-red-600">${maxAge}</div>
+          <div class="text-xs text-gray-500">Max Age (days)</div>
+        </div>
+        <div class="bg-blue-50 rounded-lg p-3 text-center">
+          <div class="text-sm font-medium" style="color: ${getColor(store.tit)}">${store.tit ? store.tit.toFixed(1) + '%' : 'N/A'}</div>
+          <div class="text-xs text-gray-500">TnT %</div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-3 text-center">
+          <div class="text-sm font-medium text-gray-700">${store.mgr?.split(' ')[1]}</div>
+          <div class="text-xs text-gray-500">Manager</div>
+        </div>
+      </div>
+      <div class="text-sm text-gray-600 mb-3">
+        <strong>Location:</strong> ${store.city}, ${store.state} | <strong>Sub:</strong> ${store.sub} | <strong>Type:</strong> ${store.store_type}
+      </div>
+      <div class="flex items-center gap-2 mb-3">
+        <button onclick="copyStoreWOs(${store.store})" class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+          📋 Copy All WOs
+        </button>
+        <button onclick="drillDownStore(${store.store})" class="px-3 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700">
+          🔍 Full Store Details
+        </button>
+      </div>
+      <table class="tbl text-sm">
+        <thead><tr><th>WO # <span class="text-xs text-gray-400">(click to copy)</span></th><th>Equipment</th><th>Problem</th><th>Age</th><th>Provider</th><th>Status</th></tr></thead>
+        <tbody>
+          ${wos.sort((a, b) => b.age_days - a.age_days).map(w => {
+            const ageColor = w.age_days >= 14 ? '#ea1100' : w.age_days >= 7 ? '#f47920' : w.age_days >= 3 ? '#ffc220' : '#2a8703';
+            const eqType = (w.equipment || '').toLowerCase().includes('rtu') ? '🌬️ RTU' : '🌀 AHU';
+            return `<tr>
+              <td>
+                <div class="flex items-center gap-2">
+                  <a href="https://servicechannel.com/sc/wo/details/${w.tracking}" target="_blank" class="text-blue-600 hover:underline font-mono">${w.tracking}</a>
+                  <button onclick="copyWO('${w.tracking}')" class="text-gray-400 hover:text-blue-600">📋</button>
+                </div>
+              </td>
+              <td>${eqType}</td>
+              <td>${w.problem}</td>
+              <td class="font-bold" style="color: ${ageColor}">${w.age_days}d</td>
+              <td class="text-xs text-gray-500 max-w-[100px] truncate">${w.provider || '-'}</td>
+              <td><span class="px-2 py-0.5 rounded text-xs ${w.status === 'OPEN' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}">${w.status}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+  
+  // Scroll to panel
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeMapDrillDown() {
+  const panel = document.getElementById('mapDrillDown');
+  if (panel) panel.classList.add('hidden');
+}
 
 function exportScorecard() {
   showToast('📤 Exporting scorecard...');

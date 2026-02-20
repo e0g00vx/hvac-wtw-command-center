@@ -223,7 +223,183 @@
           <button class="filter-chip" onclick="setMapLayer('comm',this)">📡 Comm Loss</button>
         </div>
       </div>
+      
+      <!-- AHU/RTU Filters Panel (shown when AHU/RTU layer active) -->
+      <div id="ahuMapFilters" class="hidden mb-4 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="font-bold text-purple-800 flex items-center gap-2">
+            <span>🔍</span> AHU/RTU Drill-Down Filters
+          </h4>
+          <button onclick="resetMapFilters()" class="text-sm text-purple-600 hover:text-purple-800 underline">Reset All</button>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div>
+            <label class="text-xs text-gray-600 font-medium">Equipment Type</label>
+            <select id="mapFilterEquip" onchange="applyMapFilters()" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+              <option value="">All Equipment</option>
+              <option value="ahu">AHU Only</option>
+              <option value="rtu">RTU Only</option>
+              <option value="mfc">MFC Units</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-600 font-medium">Age Range</label>
+            <select id="mapFilterAge" onchange="applyMapFilters()" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+              <option value="">All Ages</option>
+              <option value="critical">🔴 14+ Days (Critical)</option>
+              <option value="warning">🟠 7-14 Days (Warning)</option>
+              <option value="watch">🟡 3-7 Days (Watch)</option>
+              <option value="fresh">🟢 <3 Days (Fresh)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-600 font-medium">Manager</label>
+            <select id="mapFilterMgr" onchange="applyMapFilters()" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+              <option value="">All Managers</option>
+              <option value="ERIC GRAY">Eric Gray</option>
+              <option value="JASON MCALESTER">Jason McAlester</option>
+              <option value="DAVID GUESS">David Guess</option>
+              <option value="DANE CLAYTON">Dane Clayton</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-600 font-medium">Problem Type</label>
+            <select id="mapFilterProblem" onchange="applyMapFilters()" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+              <option value="">All Problems</option>
+              <option value="Not Cooling">Not Cooling</option>
+              <option value="Not Heating">Not Heating</option>
+              <option value="Comm Loss">Comm Loss</option>
+              <option value="High Humidity">High Humidity</option>
+              <option value="Water Leak">Water Leak</option>
+              <option value="Sensor">Sensor Issues</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-600 font-medium">Status</label>
+            <select id="mapFilterStatus" onchange="applyMapFilters()" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+              <option value="">All Status</option>
+              <option value="OPEN">Open</option>
+              <option value="IN PROGRESS">In Progress</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- Filter Summary Stats -->
+        <div id="mapFilterStats" class="mt-4 grid grid-cols-5 gap-3 text-center">
+          <div class="bg-white/70 rounded-lg p-2">
+            <div id="statTotalWOs" class="text-xl font-bold text-purple-700">0</div>
+            <div class="text-xs text-gray-500">Total WOs</div>
+          </div>
+          <div class="bg-white/70 rounded-lg p-2">
+            <div id="statStores" class="text-xl font-bold text-blue-700">0</div>
+            <div class="text-xs text-gray-500">Stores</div>
+          </div>
+          <div class="bg-white/70 rounded-lg p-2">
+            <div id="statCritical" class="text-xl font-bold text-red-600">0</div>
+            <div class="text-xs text-gray-500">Critical (14d+)</div>
+          </div>
+          <div class="bg-white/70 rounded-lg p-2">
+            <div id="statAvgAge" class="text-xl font-bold text-orange-600">0</div>
+            <div class="text-xs text-gray-500">Avg Age (days)</div>
+          </div>
+          <div class="bg-white/70 rounded-lg p-2 cursor-pointer hover:bg-purple-100" onclick="copyFilteredWOs()">
+            <div class="text-xl">📋</div>
+            <div class="text-xs text-gray-500">Copy WOs</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- TnT Filters Panel (shown when TnT layer active) -->
+      <div id="tntMapFilters" class="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="font-bold text-green-800 flex items-center gap-2">
+            <span>🎯</span> TnT Performance Filters
+          </h4>
+          <button onclick="resetMapFilters()" class="text-sm text-green-600 hover:text-green-800 underline">Reset All</button>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div>
+            <label class="text-xs text-gray-600 font-medium">Performance</label>
+            <select id="mapFilterTnT" onchange="applyMapFilters()" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+              <option value="">All Stores</option>
+              <option value="excellent">🟢 95%+ (Excellent)</option>
+              <option value="good">🟢 90-95% (Good)</option>
+              <option value="watch">🟡 85-90% (Watch)</option>
+              <option value="warning">🟠 80-85% (Warning)</option>
+              <option value="critical">🔴 <80% (Critical)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-600 font-medium">Store Type</label>
+            <select id="mapFilterType" onchange="applyMapFilters()" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+              <option value="">All Types</option>
+              <option value="Supercenter">Supercenter</option>
+              <option value="NHM">Neighborhood Market</option>
+              <option value="Sams">Sam's Club</option>
+              <option value="Discount">Discount Store</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-600 font-medium">Manager</label>
+            <select id="mapFilterTnTMgr" onchange="applyMapFilters()" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+              <option value="">All Managers</option>
+              <option value="ERIC GRAY">Eric Gray</option>
+              <option value="JASON MCALESTER">Jason McAlester</option>
+              <option value="DAVID GUESS">David Guess</option>
+              <option value="DANE CLAYTON">Dane Clayton</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-600 font-medium">Has Open WOs</label>
+            <select id="mapFilterHasWO" onchange="applyMapFilters()" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+              <option value="">All</option>
+              <option value="yes">With Open WOs</option>
+              <option value="no">No Open WOs</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-600 font-medium">Sub-Region</label>
+            <select id="mapFilterSub" onchange="applyMapFilters()" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+              <option value="">All Sub-Regions</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- TnT Stats -->
+        <div id="tntFilterStats" class="mt-4 grid grid-cols-5 gap-3 text-center">
+          <div class="bg-white/70 rounded-lg p-2">
+            <div id="statTotalStores" class="text-xl font-bold text-green-700">0</div>
+            <div class="text-xs text-gray-500">Total Stores</div>
+          </div>
+          <div class="bg-white/70 rounded-lg p-2">
+            <div id="statAvgTnT" class="text-xl font-bold text-blue-700">0%</div>
+            <div class="text-xs text-gray-500">Avg TnT</div>
+          </div>
+          <div class="bg-white/70 rounded-lg p-2">
+            <div id="statAbove95" class="text-xl font-bold text-green-600">0</div>
+            <div class="text-xs text-gray-500">≥95%</div>
+          </div>
+          <div class="bg-white/70 rounded-lg p-2">
+            <div id="statBelow85" class="text-xl font-bold text-red-600">0</div>
+            <div class="text-xs text-gray-500"><85%</div>
+          </div>
+          <div class="bg-white/70 rounded-lg p-2">
+            <div id="statWithWOs" class="text-xl font-bold text-orange-600">0</div>
+            <div class="text-xs text-gray-500">With WOs</div>
+          </div>
+        </div>
+      </div>
+      
       <div id="map"></div>
+      
+      <!-- Drill-Down Details Panel -->
+      <div id="mapDrillDown" class="hidden mt-4 p-4 bg-white rounded-lg border-2 border-blue-300 shadow-lg">
+        <div class="flex items-center justify-between mb-3">
+          <h4 id="drillDownTitle" class="font-bold text-blue-800 text-lg"></h4>
+          <button onclick="closeMapDrillDown()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+        </div>
+        <div id="drillDownContent"></div>
+      </div>
       
       <!-- Share Section -->
       <div class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
