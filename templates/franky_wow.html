@@ -776,9 +776,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <button onclick="switchTab('exec')" id="tab-exec" role="tab" aria-selected="true" aria-controls="exec-content"
                 class="border-b-3 border-sky-500 text-sky-600 py-4 px-2 text-sm font-semibold whitespace-nowrap">📋 Executive</button>
             <button onclick="switchTab('storemap')" id="tab-storemap" role="tab" aria-selected="false" aria-controls="storemap-content"
-                class="border-b-3 border-transparent text-gray-500 hover:text-sky-600 py-4 px-2 text-sm font-medium whitespace-nowrap">🗺️ Store Map</button>
+                class="border-b-3 border-transparent text-gray-500 hover:text-sky-600 py-4 px-2 text-sm font-medium whitespace-nowrap">🗺️ Heat Map</button>
             <button onclick="switchTab('ahumap')" id="tab-ahumap" role="tab" aria-selected="false" aria-controls="ahumap-content"
-                class="border-b-3 border-transparent text-gray-500 hover:text-sky-600 py-4 px-2 text-sm font-medium whitespace-nowrap">🌡️ HVAC Map</button>
+                class="border-b-3 border-transparent text-gray-500 hover:text-sky-600 py-4 px-2 text-sm font-medium whitespace-nowrap">🚨 RTU/AHU Broken</button>
             <button onclick="switchTab('tnt')" id="tab-tnt" role="tab" aria-selected="false" aria-controls="tnt-content"
                 class="border-b-3 border-transparent text-gray-500 hover:text-sky-600 py-4 px-2 text-sm font-medium whitespace-nowrap">📊 TnT</button>
             <button onclick="switchTab('wtw')" id="tab-wtw" role="tab" aria-selected="false" aria-controls="wtw-content"
@@ -9473,82 +9473,163 @@ function resetRefTermRanking() {
 <!-- ═══════════════════════════════════════════════════════════════════════════════════════════════ -->
 <section id="storemap-content" class="hidden" role="tabpanel" aria-labelledby="tab-storemap">
 <div class="max-w-7xl mx-auto px-4 py-8">
-    <!-- Hero Card -->
-    <div class="glass-card p-8 mb-8">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
-            <div>
-                <h2 class="text-2xl font-bold gradient-text">🗺️ Store Health Heat Map</h2>
-                <p class="text-gray-500 mt-1">Real-time TnT performance across Region 15B stores</p>
-            </div>
-            <div class="flex gap-6 text-sm">
-                <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 shadow"></div><span class="text-gray-600 font-medium">≥95% Excellent</span></div>
-                <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-gradient-to-br from-amber-300 to-amber-400 shadow"></div><span class="text-gray-600 font-medium">85-95% Good</span></div>
-                <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 shadow"></div><span class="text-gray-600 font-medium">75-85% Warning</span></div>
-                <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-gradient-to-br from-rose-400 to-rose-500 shadow"></div><span class="text-gray-600 font-medium">&lt;75% Critical</span></div>
-            </div>
-        </div>
-        <div id="storeHealthMap"></div>
+    <!-- Title -->
+    <div class="glass-card bg-gradient-to-r from-sky-600 to-blue-700 text-white p-8 mb-6">
+        <h2 class="text-2xl font-bold mb-2">🗺️ Region 15B — Time in Target Heat Map</h2>
+        <p class="text-sky-100">Real-time TnT performance across all stores with Director & Regional filtering</p>
     </div>
+    
+    <!-- Filters -->
+    <div class="glass-card p-4 mb-6">
+        <div class="flex flex-wrap items-center gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">FM Director</label>
+                <select id="heatmapFilterDir" onchange="renderHeatMapTab()" class="border-2 border-gray-200 rounded-lg px-4 py-2 text-sm min-w-[180px] focus:border-sky-500 focus:outline-none">
+                    <option value="">All Directors</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">FS Regional</label>
+                <select id="heatmapFilterRm" onchange="renderHeatMapTab()" class="border-2 border-gray-200 rounded-lg px-4 py-2 text-sm min-w-[180px] focus:border-sky-500 focus:outline-none">
+                    <option value="">All Regionals</option>
+                </select>
+            </div>
+            <div class="ml-auto flex items-center gap-4">
+                <span class="text-sm text-gray-500">Showing: <strong id="heatmapStoreCount" class="text-sky-600">0</strong> stores</span>
+                <button onclick="resetHeatmapFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">🔄 Reset</button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Stats Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <div class="glass-card p-6 text-center hover:shadow-xl transition-all">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center text-2xl">🌟</div>
-            <p class="text-4xl font-bold text-emerald-600" id="healthExcellent">--</p>
-            <p class="text-xs text-gray-500 mt-2 font-medium">EXCELLENT (≥95%)</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="glass-card p-5 text-center">
+            <p class="text-3xl font-bold text-emerald-600" id="healthExcellent">--</p>
+            <p class="text-xs text-gray-500 mt-1">✅ Excellent (≥95%)</p>
         </div>
-        <div class="glass-card p-6 text-center hover:shadow-xl transition-all">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center text-2xl">👍</div>
-            <p class="text-4xl font-bold text-amber-600" id="healthGood">--</p>
-            <p class="text-xs text-gray-500 mt-2 font-medium">GOOD (85-95%)</p>
+        <div class="glass-card p-5 text-center">
+            <p class="text-3xl font-bold text-amber-500" id="healthGood">--</p>
+            <p class="text-xs text-gray-500 mt-1">🟡 Good (85-95%)</p>
         </div>
-        <div class="glass-card p-6 text-center hover:shadow-xl transition-all">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center text-2xl">⚠️</div>
-            <p class="text-4xl font-bold text-orange-600" id="healthWarning">--</p>
-            <p class="text-xs text-gray-500 mt-2 font-medium">WARNING (75-85%)</p>
+        <div class="glass-card p-5 text-center">
+            <p class="text-3xl font-bold text-orange-500" id="healthWarning">--</p>
+            <p class="text-xs text-gray-500 mt-1">🟠 Warning (75-85%)</p>
         </div>
-        <div class="glass-card p-6 text-center hover:shadow-xl transition-all">
-            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-rose-100 to-rose-200 flex items-center justify-center text-2xl">🚨</div>
-            <p class="text-4xl font-bold text-rose-600" id="healthCritical">--</p>
-            <p class="text-xs text-gray-500 mt-2 font-medium">CRITICAL (&lt;75%)</p>
+        <div class="glass-card p-5 text-center">
+            <p class="text-3xl font-bold text-red-500" id="healthCritical">--</p>
+            <p class="text-xs text-gray-500 mt-1">🔴 Critical (<75%)</p>
         </div>
+    </div>
+    
+    <!-- Map -->
+    <div class="glass-card p-4">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="font-bold text-gray-800">Store TnT Performance</h3>
+            <div class="flex gap-4 text-xs">
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> 95%+</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-500"></span> 85-95%</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-orange-500"></span> 75-85%</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-500"></span> <75%</span>
+            </div>
+        </div>
+        <div id="storeHealthMap" style="height:550px;border-radius:12px;"></div>
     </div>
 </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════════════════════════ -->
-<!-- AHU/RTU MAP TAB -->
-<!-- ═══════════════════════════════════════════════════════════════════════════════════════════════ -->
+<!-- ═════════════════════════════════════════════════════════════════════════════════════════════════ -->
+<!-- RTU/AHU BROKEN TAB -->
+<!-- ═════════════════════════════════════════════════════════════════════════════════════════════════ -->
 <section id="ahumap-content" class="hidden" role="tabpanel" aria-labelledby="tab-ahumap">
 <div class="max-w-7xl mx-auto px-4 py-8">
-    <div class="glass-card p-8 mb-8">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
+    <!-- Title -->
+    <div class="glass-card bg-gradient-to-r from-red-600 to-orange-600 text-white p-8 mb-6">
+        <h2 class="text-2xl font-bold mb-2">🚨 RTU/AHU Broken — Comm Loss & Alarms</h2>
+        <p class="text-red-100">Units requiring immediate attention across Region 15B</p>
+    </div>
+    
+    <!-- Filters -->
+    <div class="glass-card p-4 mb-6">
+        <div class="flex flex-wrap items-center gap-4">
             <div>
-                <h2 class="text-2xl font-bold gradient-text">🌡️ HVAC Unit Performance Map</h2>
-                <p class="text-gray-500 mt-1">AHU & RTU status across all stores</p>
+                <label class="block text-xs font-medium text-gray-500 mb-1">FM Director</label>
+                <select id="rtuFilterDir" onchange="renderRtuBrokenTab()" class="border-2 border-gray-200 rounded-lg px-4 py-2 text-sm min-w-[180px] focus:border-red-500 focus:outline-none">
+                    <option value="">All Directors</option>
+                </select>
             </div>
-            <div class="flex items-center gap-4">
-                <select id="unitFilter" onchange="renderAhuMap()" class="bg-white border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm font-medium shadow-sm hover:border-sky-300 transition"><option value="all">All Units</option><option value="ahu">AHU Only</option><option value="rtu">RTU Only</option></select>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">FS Regional</label>
+                <select id="rtuFilterRm" onchange="renderRtuBrokenTab()" class="border-2 border-gray-200 rounded-lg px-4 py-2 text-sm min-w-[180px] focus:border-red-500 focus:outline-none">
+                    <option value="">All Regionals</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Issue Type</label>
+                <select id="rtuFilterIssue" onchange="renderRtuBrokenTab()" class="border-2 border-gray-200 rounded-lg px-4 py-2 text-sm min-w-[150px] focus:border-red-500 focus:outline-none">
+                    <option value="all">All Issues</option>
+                    <option value="comm">Comm Loss Only</option>
+                    <option value="alarm">Alarms Only</option>
+                </select>
+            </div>
+            <div class="ml-auto flex items-center gap-4">
+                <span class="text-sm text-gray-500">Units with issues: <strong id="rtuIssueCount" class="text-red-600">0</strong></span>
+                <button onclick="resetRtuFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">🔄 Reset</button>
             </div>
         </div>
-        <div class="flex gap-6 mb-6 text-sm">
-            <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 shadow"></div><span class="text-gray-600 font-medium">Online</span></div>
-            <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-gradient-to-br from-rose-400 to-rose-500 shadow"></div><span class="text-gray-600 font-medium">Offline</span></div>
-            <div class="flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 shadow"></div><span class="text-gray-600 font-medium">Warning</span></div>
-        </div>
-        <div id="ahuRtuMap"></div>
     </div>
+    
     <!-- Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-        <div class="glass-card p-5 text-center"><p class="text-3xl font-bold text-sky-600" id="ahuTotal">--</p><p class="text-xs text-gray-500 mt-1">TOTAL UNITS</p></div>
-        <div class="glass-card p-5 text-center"><p class="text-3xl font-bold text-emerald-600" id="ahuOnline">--</p><p class="text-xs text-gray-500 mt-1">ONLINE</p></div>
-        <div class="glass-card p-5 text-center"><p class="text-3xl font-bold text-rose-500" id="ahuOffline">--</p><p class="text-xs text-gray-500 mt-1">OFFLINE</p></div>
-        <div class="glass-card p-5 text-center"><p class="text-3xl font-bold text-amber-600" id="ahuAvgTemp">--°</p><p class="text-xs text-gray-500 mt-1">AVG ZONE TEMP</p></div>
-        <div class="glass-card p-5 text-center"><p class="text-3xl font-bold text-violet-600" id="ahuAvgDp">--°</p><p class="text-xs text-gray-500 mt-1">AVG DEWPOINT</p></div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="glass-card p-5 text-center border-l-4 border-red-500">
+            <p class="text-3xl font-bold text-red-600" id="rtuCommLoss">--</p>
+            <p class="text-xs text-gray-500 mt-1">📵 Comm Loss</p>
+        </div>
+        <div class="glass-card p-5 text-center border-l-4 border-orange-500">
+            <p class="text-3xl font-bold text-orange-600" id="rtuAlarms">--</p>
+            <p class="text-xs text-gray-500 mt-1">⚠️ Active Alarms</p>
+        </div>
+        <div class="glass-card p-5 text-center border-l-4 border-amber-500">
+            <p class="text-3xl font-bold text-amber-600" id="rtuTotalBroken">--</p>
+            <p class="text-xs text-gray-500 mt-1">🔴 Total Broken</p>
+        </div>
+        <div class="glass-card p-5 text-center border-l-4 border-emerald-500">
+            <p class="text-3xl font-bold text-emerald-600" id="rtuOnline">--</p>
+            <p class="text-xs text-gray-500 mt-1">✅ Online Units</p>
+        </div>
     </div>
+    
+    <!-- Map -->
+    <div class="glass-card p-4 mb-6">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="font-bold text-gray-800">Stores with Broken Units</h3>
+            <div class="flex gap-4 text-xs">
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-500"></span> Comm Loss</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-orange-500"></span> Alarms</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-400"></span> Multiple</span>
+            </div>
+        </div>
+        <div id="rtuBrokenMap" style="height:450px;border-radius:12px;"></div>
+    </div>
+    
     <!-- Table -->
     <div class="glass-card overflow-hidden">
-        <div class="p-4 bg-gradient-to-r from-sky-50 to-cyan-50 border-b border-gray-100"><h3 class="font-bold text-sky-700">Unit Details</h3></div>
-        <div class="overflow-x-auto max-h-80"><table class="w-full text-sm"><thead class="bg-gray-50 text-gray-600"><tr><th class="px-4 py-3 text-left font-semibold">Store</th><th class="px-4 py-3 text-left font-semibold">Unit Type</th><th class="px-4 py-3 text-left font-semibold">Status</th><th class="px-4 py-3 text-left font-semibold">Zone Temp</th><th class="px-4 py-3 text-left font-semibold">Dewpoint</th></tr></thead><tbody id="ahuTableBody"></tbody></table></div>
+        <div class="p-4 bg-gradient-to-r from-red-50 to-orange-50 border-b border-gray-100">
+            <h3 class="font-bold text-red-700">📝 Units Requiring Attention</h3>
+        </div>
+        <div class="overflow-x-auto max-h-80">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 text-gray-600 sticky top-0">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold">Store</th>
+                        <th class="px-4 py-3 text-left font-semibold">Unit</th>
+                        <th class="px-4 py-3 text-left font-semibold">Type</th>
+                        <th class="px-4 py-3 text-left font-semibold">Issue</th>
+                        <th class="px-4 py-3 text-left font-semibold">Director</th>
+                    </tr>
+                </thead>
+                <tbody id="rtuBrokenTableBody"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 </section>
@@ -9865,6 +9946,231 @@ window.switchTab = function(tab) {
     if (tab === 'mm') setTimeout(renderMmChart, 100);
 };
 
+// ═════════════════════════════════════════════════════════════════════════════════════════════════
+// HEAT MAP TAB (Region 15B - Time in Target)
+// ═════════════════════════════════════════════════════════════════════════════════════════════════
+let heatMapInstance = null;
+let heatMapFiltersPopulated = false;
+
+const CITY_COORDS = {
+    'HOUSTON': [29.76, -95.37], 'DALLAS': [32.78, -96.80], 'AUSTIN': [30.27, -97.74],
+    'SAN ANTONIO': [29.42, -98.49], 'FORT WORTH': [32.75, -97.33], 'EL PASO': [31.76, -106.49],
+    'ARLINGTON': [32.73, -97.11], 'PLANO': [33.02, -96.70], 'CORPUS CHRISTI': [27.80, -97.40],
+    'LUBBOCK': [33.58, -101.85], 'LAREDO': [27.51, -99.51], 'IRVING': [32.81, -96.95],
+    'AMARILLO': [35.22, -101.83], 'MCKINNEY': [33.20, -96.62], 'FRISCO': [33.15, -96.82],
+    'WACO': [31.55, -97.15], 'MIDLAND': [31.99, -102.08], 'ODESSA': [31.85, -102.37],
+    'BEAUMONT': [30.08, -94.13], 'ABILENE': [32.45, -99.73], 'TYLER': [32.35, -95.30],
+    'ROUND ROCK': [30.51, -97.68], 'SUGAR LAND': [29.62, -95.64], 'MCALLEN': [26.20, -98.23],
+    'KILLEEN': [31.12, -97.73], 'COLLEGE STATION': [30.63, -96.33], 'DENTON': [33.21, -97.13],
+    'BROWNSVILLE': [25.90, -97.50], 'PASADENA': [29.69, -95.21], 'MESQUITE': [32.77, -96.60],
+    'CARROLLTON': [32.95, -96.89], 'GRAND PRAIRIE': [32.75, -96.99], 'LONGVIEW': [32.50, -94.74]
+};
+
+function getCityCoords(city) {
+    const c = (city || '').toUpperCase().trim();
+    for (const [name, coords] of Object.entries(CITY_COORDS)) {
+        if (c.includes(name)) return [coords[0] + (Math.random()-0.5)*0.08, coords[1] + (Math.random()-0.5)*0.08];
+    }
+    return [30 + Math.random()*5, -99 + Math.random()*8];
+}
+
+function initHeatMapTab() {
+    if (heatMapInstance) return;
+    const mapEl = document.getElementById('storeHealthMap');
+    if (!mapEl) return;
+    heatMapInstance = L.map('storeHealthMap').setView([31.0, -99.5], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM', maxZoom: 18 }).addTo(heatMapInstance);
+    populateHeatMapFilters();
+}
+
+function populateHeatMapFilters() {
+    if (heatMapFiltersPopulated || !STORES || STORES.length === 0) return;
+    const directors = [...new Set(STORES.map(s => s.dir).filter(Boolean))].sort();
+    const regionals = [...new Set(STORES.map(s => s.rm).filter(Boolean))].sort();
+    const dirSelect = document.getElementById('heatmapFilterDir');
+    const rmSelect = document.getElementById('heatmapFilterRm');
+    if (dirSelect) directors.forEach(d => dirSelect.innerHTML += `<option value="${d}">${d}</option>`);
+    if (rmSelect) regionals.forEach(r => rmSelect.innerHTML += `<option value="${r}">${r}</option>`);
+    heatMapFiltersPopulated = true;
+}
+
+function renderHeatMapTab() {
+    if (!heatMapInstance || !STORES || STORES.length === 0) return;
+    heatMapInstance.eachLayer(layer => { if (layer instanceof L.CircleMarker) heatMapInstance.removeLayer(layer); });
+    
+    const dirFilter = document.getElementById('heatmapFilterDir')?.value || '';
+    const rmFilter = document.getElementById('heatmapFilterRm')?.value || '';
+    
+    let filtered = STORES.filter(s => {
+        if (dirFilter && s.dir !== dirFilter) return false;
+        if (rmFilter && s.rm !== rmFilter) return false;
+        return true;
+    });
+    
+    let excellent = 0, good = 0, warning = 0, critical = 0;
+    
+    filtered.forEach(s => {
+        const [lat, lng] = getCityCoords(s.city);
+        const tnt = parseFloat(s.tnt) || 0;
+        let color, status;
+        if (tnt >= 95) { color = '#10b981'; status = 'Excellent'; excellent++; }
+        else if (tnt >= 85) { color = '#f59e0b'; status = 'Good'; good++; }
+        else if (tnt >= 75) { color = '#f97316'; status = 'Warning'; warning++; }
+        else { color = '#ef4444'; status = 'Critical'; critical++; }
+        
+        L.circleMarker([lat, lng], { radius: 10, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9 })
+            .bindPopup(`<div style="font-family:system-ui;min-width:180px">
+                <div style="font-weight:bold">Store #${s.sn || '?'}</div>
+                <div style="color:#666;font-size:12px">${s.city || ''}</div>
+                <div style="background:#f3f4f6;padding:8px;border-radius:6px;text-align:center;margin:8px 0">
+                    <div style="font-size:20px;font-weight:bold;color:${color}">${tnt.toFixed(1)}%</div>
+                    <div style="font-size:11px;color:#666">TnT - ${status}</div>
+                </div>
+                <div style="font-size:11px;color:#666"><strong>Director:</strong> ${s.dir || 'N/A'}<br><strong>Regional:</strong> ${s.rm || 'N/A'}</div>
+            </div>`)
+            .bindTooltip(`#${s.sn}: ${tnt.toFixed(1)}%`)
+            .addTo(heatMapInstance);
+    });
+    
+    document.getElementById('healthExcellent').textContent = excellent;
+    document.getElementById('healthGood').textContent = good;
+    document.getElementById('healthWarning').textContent = warning;
+    document.getElementById('healthCritical').textContent = critical;
+    document.getElementById('heatmapStoreCount').textContent = filtered.length;
+    
+    if (filtered.length > 0) heatMapInstance.fitBounds(filtered.map(s => getCityCoords(s.city)), { padding: [30, 30] });
+}
+
+function resetHeatmapFilters() {
+    document.getElementById('heatmapFilterDir').value = '';
+    document.getElementById('heatmapFilterRm').value = '';
+    renderHeatMapTab();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════════════════════════
+// RTU/AHU BROKEN TAB (Comm Loss & Alarms)
+// ═════════════════════════════════════════════════════════════════════════════════════════════════
+let rtuBrokenMapInstance = null;
+let rtuFiltersPopulated = false;
+
+function initRtuBrokenMap() {
+    if (rtuBrokenMapInstance) return;
+    const mapEl = document.getElementById('rtuBrokenMap');
+    if (!mapEl) return;
+    rtuBrokenMapInstance = L.map('rtuBrokenMap').setView([31.0, -99.5], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM', maxZoom: 18 }).addTo(rtuBrokenMapInstance);
+    populateRtuFilters();
+}
+
+function populateRtuFilters() {
+    if (rtuFiltersPopulated || !STORES || STORES.length === 0) return;
+    const directors = [...new Set(STORES.map(s => s.dir).filter(Boolean))].sort();
+    const regionals = [...new Set(STORES.map(s => s.rm).filter(Boolean))].sort();
+    const dirSelect = document.getElementById('rtuFilterDir');
+    const rmSelect = document.getElementById('rtuFilterRm');
+    if (dirSelect) directors.forEach(d => dirSelect.innerHTML += `<option value="${d}">${d}</option>`);
+    if (rmSelect) regionals.forEach(r => rmSelect.innerHTML += `<option value="${r}">${r}</option>`);
+    rtuFiltersPopulated = true;
+}
+
+function renderRtuBrokenTab() {
+    if (!rtuBrokenMapInstance) return;
+    rtuBrokenMapInstance.eachLayer(layer => { if (layer instanceof L.CircleMarker) rtuBrokenMapInstance.removeLayer(layer); });
+    
+    const dirFilter = document.getElementById('rtuFilterDir')?.value || '';
+    const rmFilter = document.getElementById('rtuFilterRm')?.value || '';
+    const issueFilter = document.getElementById('rtuFilterIssue')?.value || 'all';
+    
+    let commLoss = 0, alarms = 0, totalOnline = 0;
+    const storeIssues = {};
+    const tableData = [];
+    
+    // Process terminal units
+    Object.keys(TERM_UNITS || {}).forEach(storeNum => {
+        const store = STORES.find(s => s.sn == storeNum);
+        if (!store) return;
+        if (dirFilter && store.dir !== dirFilter) return;
+        if (rmFilter && store.rm !== rmFilter) return;
+        
+        const units = TERM_UNITS[storeNum] || [];
+        let storeComm = 0, storeAlarm = 0;
+        
+        units.forEach(u => {
+            const hasComm = (u.lo || 0) > 0;
+            const hasAlarm = (u.al || 0) > 0 || (u.hf || 0) > 0;
+            
+            if (issueFilter === 'comm' && !hasComm) return;
+            if (issueFilter === 'alarm' && !hasAlarm) return;
+            
+            if (hasComm) { commLoss++; storeComm++; }
+            if (hasAlarm) { alarms++; storeAlarm++; }
+            if (!hasComm && !hasAlarm) totalOnline++;
+            
+            if (hasComm || hasAlarm) {
+                tableData.push({
+                    store: storeNum, city: store.city || '', unit: u.un || 'Unit',
+                    type: ((u.ut || u.cl || '').toLowerCase().includes('rooftop') || (u.ut || '').toLowerCase().includes('rtu')) ? 'RTU' : 'AHU',
+                    issue: hasComm ? 'comm' : 'alarm', director: store.dir || 'N/A'
+                });
+            }
+        });
+        
+        if (storeComm > 0 || storeAlarm > 0) storeIssues[storeNum] = { comm: storeComm, alarm: storeAlarm, store };
+    });
+    
+    // Add markers
+    Object.values(storeIssues).forEach(({ comm, alarm, store }) => {
+        const [lat, lng] = getCityCoords(store.city);
+        let color = '#fbbf24';
+        if (comm > 0 && alarm === 0) color = '#ef4444';
+        else if (alarm > 0 && comm === 0) color = '#f97316';
+        
+        L.circleMarker([lat, lng], { radius: 12, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9 })
+            .bindPopup(`<div style="font-family:system-ui;min-width:200px">
+                <div style="font-weight:bold">Store #${store.sn}</div>
+                <div style="color:#666;font-size:12px">${store.city || ''}</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0">
+                    <div style="background:#fee2e2;padding:6px;border-radius:4px;text-align:center"><div style="font-weight:bold;color:#dc2626">${comm}</div><div style="font-size:10px">Comm Loss</div></div>
+                    <div style="background:#ffedd5;padding:6px;border-radius:4px;text-align:center"><div style="font-weight:bold;color:#ea580c">${alarm}</div><div style="font-size:10px">Alarms</div></div>
+                </div>
+                <div style="font-size:11px;color:#666"><strong>Director:</strong> ${store.dir || 'N/A'}</div>
+            </div>`)
+            .addTo(rtuBrokenMapInstance);
+    });
+    
+    // Update stats
+    document.getElementById('rtuCommLoss').textContent = commLoss;
+    document.getElementById('rtuAlarms').textContent = alarms;
+    document.getElementById('rtuTotalBroken').textContent = commLoss + alarms;
+    document.getElementById('rtuOnline').textContent = totalOnline;
+    document.getElementById('rtuIssueCount').textContent = tableData.length;
+    
+    // Update table
+    const tbody = document.getElementById('rtuBrokenTableBody');
+    if (tbody) {
+        tbody.innerHTML = tableData.slice(0, 50).map(r => `
+            <tr class="border-b border-gray-100 hover:bg-red-50">
+                <td class="px-4 py-2 font-semibold">#${r.store} <span class="text-gray-400 text-xs">${r.city}</span></td>
+                <td class="px-4 py-2">${r.unit}</td>
+                <td class="px-4 py-2"><span class="px-2 py-1 rounded text-xs font-medium ${r.type==='RTU'?'bg-blue-100 text-blue-700':'bg-purple-100 text-purple-700'}">${r.type}</span></td>
+                <td class="px-4 py-2"><span class="px-2 py-1 rounded text-xs font-medium ${r.issue==='comm'?'bg-red-100 text-red-700':'bg-orange-100 text-orange-700'}">${r.issue==='comm'?'📵 Comm Loss':'⚠️ Alarm'}</span></td>
+                <td class="px-4 py-2 text-sm text-gray-600">${r.director}</td>
+            </tr>
+        `).join('') || '<tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No issues found</td></tr>';
+    }
+    
+    // Fit bounds
+    const bounds = Object.values(storeIssues).map(({store}) => getCityCoords(store.city));
+    if (bounds.length > 0) rtuBrokenMapInstance.fitBounds(bounds, { padding: [30, 30] });
+}
+
+function resetRtuFilters() {
+    document.getElementById('rtuFilterDir').value = '';
+    document.getElementById('rtuFilterRm').value = '';
+    document.getElementById('rtuFilterIssue').value = 'all';
+    renderRtuBrokenTab();
+}
+
 // ═══ INITIALIZE ═══
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Franky Command Center loaded!');
@@ -9919,7 +10225,7 @@ let mgrSlice = null; // { key: 'sr', value: 'Smith, John' }
 // ── Tab switching ──
 function switchTab(tab) {
     currentTab = tab;
-    ['exec','tnt','wtw','leak','hvac','nps','goals','projects','kpi'].forEach(t => {
+    ['exec','storemap','ahumap','tnt','wtw','leak','hvac','mm','nps','goals','projects','kpi'].forEach(t => {
         const el = document.getElementById(t + '-content');
         if (el) el.classList.toggle('hidden', t !== tab);
         const btn = document.getElementById('tab-' + t);
@@ -9931,6 +10237,8 @@ function switchTab(tab) {
         }
     });
     if (tab === 'exec') renderExec();
+    if (tab === 'storemap') { setTimeout(() => { initHeatMapTab(); renderHeatMapTab(); }, 100); }
+    if (tab === 'ahumap') { setTimeout(() => { initRtuBrokenMap(); renderRtuBrokenTab(); }, 100); }
     if (tab === 'wtw') wtwRenderAll();
     if (tab === 'leak') renderLeakTab();
     if (tab === 'hvac') renderHvacTab();
@@ -10584,4 +10892,3 @@ window.onerror = function(msg, src, line, col, err) {
 </script>
 </body>
 </html>
-
