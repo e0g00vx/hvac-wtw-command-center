@@ -269,8 +269,8 @@ def background_refresh():
 
 @app.get("/full", response_class=HTMLResponse)
 async def full_dashboard(request: Request):
-    """Serve FRANKY'S FIRE Command Center - unique and powerful."""
-    html_path = TEMPLATES_DIR / "franky_fire.html"
+    """Serve FRANKY'S ULTIMATE Command Center - dblish data + Fire colors + Heat Maps."""
+    html_path = TEMPLATES_DIR / "franky_ultimate.html"
     if html_path.exists():
         content = html_path.read_text(encoding="utf-8")
         return HTMLResponse(content=content)
