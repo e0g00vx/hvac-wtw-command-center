@@ -282,6 +282,15 @@ async def home(request: Request):
     from fastapi.responses import RedirectResponse
     return RedirectResponse(url="/full", status_code=302)
 
+@app.get("/heatmap", response_class=HTMLResponse)
+async def heatmap(request: Request):
+    """Serve standalone heat map page."""
+    html_path = TEMPLATES_DIR / "heatmap.html"
+    if html_path.exists():
+        content = html_path.read_text(encoding="utf-8")
+        return HTMLResponse(content=content)
+    return HTMLResponse("<h1>Heat map not found</h1>", status_code=404)
+
 # Mount data directory for JSON files
 DATA_DIR = BASE_DIR / "data"
 if DATA_DIR.exists():

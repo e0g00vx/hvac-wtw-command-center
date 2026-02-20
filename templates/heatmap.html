@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Region 15B Store Heat Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #map { height: 600px; width: 100%; border-radius: 12px; }
+        .legend { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+        .legend-dot { width: 16px; height: 16px; border-radius: 50%; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-6 px-4 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-3xl font-bold">🗺️ Region 15B Store Heat Map</h1>
+            <p class="text-blue-200 mt-1">FM Director: Franky Gonzalez | Sr. Director: B.A. Glass</p>
+        </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="max-w-7xl mx-auto px-4 py-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div class="bg-white rounded-xl p-4 shadow text-center">
+                <p class="text-3xl font-bold text-emerald-600" id="statExcellent">0</p>
+                <p class="text-sm text-gray-500">✅ Excellent (95%+)</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow text-center">
+                <p class="text-3xl font-bold text-amber-500" id="statGood">0</p>
+                <p class="text-sm text-gray-500">🟡 Good (85-95%)</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow text-center">
+                <p class="text-3xl font-bold text-orange-500" id="statWarning">0</p>
+                <p class="text-sm text-gray-500">🟠 Warning (75-85%)</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow text-center">
+                <p class="text-3xl font-bold text-red-500" id="statCritical">0</p>
+                <p class="text-sm text-gray-500">🔴 Critical (<75%)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div class="max-w-7xl mx-auto px-4 pb-8">
+        <div class="bg-white rounded-xl shadow-lg p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Store TnT Performance Map</h2>
+                <span class="text-sm text-gray-500" id="storeCount">Loading stores...</span>
+            </div>
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="max-w-7xl mx-auto px-4 pb-8">
+        <div class="bg-white rounded-xl shadow p-4">
+            <h3 class="font-bold text-gray-700 mb-3">Legend - TnT Performance</h3>
+            <div class="flex flex-wrap gap-6">
+                <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div><span>Excellent (95%+)</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div><span>Good (85-95%)</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span>Warning (75-85%)</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div><span>Critical (<75%)</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Texas store locations with realistic data
+    const STORES = [
+        { id: 1001, name: 'Supercenter', city: 'Houston', lat: 29.76, lng: -95.37, tnt: 96.2 },
+        { id: 1002, name: 'Supercenter', city: 'Houston NW', lat: 29.85, lng: -95.48, tnt: 88.5 },
+        { id: 1003, name: 'Supercenter', city: 'Houston SE', lat: 29.65, lng: -95.28, tnt: 72.3 },
+        { id: 1004, name: 'Neighborhood Market', city: 'Katy', lat: 29.79, lng: -95.82, tnt: 94.1 },
+        { id: 1005, name: 'Supercenter', city: 'Sugar Land', lat: 29.62, lng: -95.64, tnt: 91.8 },
+        { id: 1006, name: 'Supercenter', city: 'Dallas', lat: 32.78, lng: -96.80, tnt: 97.5 },
+        { id: 1007, name: 'Supercenter', city: 'Dallas North', lat: 32.92, lng: -96.77, tnt: 85.2 },
+        { id: 1008, name: 'Neighborhood Market', city: 'Plano', lat: 33.02, lng: -96.70, tnt: 78.9 },
+        { id: 1009, name: 'Supercenter', city: 'Frisco', lat: 33.15, lng: -96.82, tnt: 92.4 },
+        { id: 1010, name: 'Supercenter', city: 'McKinney', lat: 33.20, lng: -96.62, tnt: 89.7 },
+        { id: 1011, name: 'Supercenter', city: 'San Antonio', lat: 29.42, lng: -98.49, tnt: 95.8 },
+        { id: 1012, name: 'Supercenter', city: 'San Antonio NW', lat: 29.55, lng: -98.62, tnt: 68.4 },
+        { id: 1013, name: 'Neighborhood Market', city: 'New Braunfels', lat: 29.70, lng: -98.12, tnt: 91.2 },
+        { id: 1014, name: 'Supercenter', city: 'Austin', lat: 30.27, lng: -97.74, tnt: 93.6 },
+        { id: 1015, name: 'Supercenter', city: 'Round Rock', lat: 30.51, lng: -97.68, tnt: 96.8 },
+        { id: 1016, name: 'Neighborhood Market', city: 'Cedar Park', lat: 30.51, lng: -97.82, tnt: 82.1 },
+        { id: 1017, name: 'Supercenter', city: 'Fort Worth', lat: 32.75, lng: -97.33, tnt: 90.5 },
+        { id: 1018, name: 'Supercenter', city: 'Arlington', lat: 32.73, lng: -97.11, tnt: 74.2 },
+        { id: 1019, name: 'Neighborhood Market', city: 'Grand Prairie', lat: 32.75, lng: -96.99, tnt: 87.9 },
+        { id: 1020, name: 'Supercenter', city: 'Irving', lat: 32.81, lng: -96.95, tnt: 95.3 },
+        { id: 1021, name: 'Supercenter', city: 'Corpus Christi', lat: 27.80, lng: -97.40, tnt: 88.7 },
+        { id: 1022, name: 'Supercenter', city: 'McAllen', lat: 26.20, lng: -98.23, tnt: 71.5 },
+        { id: 1023, name: 'Neighborhood Market', city: 'Brownsville', lat: 25.90, lng: -97.50, tnt: 79.8 },
+        { id: 1024, name: 'Supercenter', city: 'Laredo', lat: 27.51, lng: -99.51, tnt: 92.1 },
+        { id: 1025, name: 'Supercenter', city: 'El Paso', lat: 31.76, lng: -106.49, tnt: 94.6 },
+        { id: 1026, name: 'Supercenter', city: 'El Paso East', lat: 31.78, lng: -106.32, tnt: 86.3 },
+        { id: 1027, name: 'Supercenter', city: 'Lubbock', lat: 33.58, lng: -101.85, tnt: 97.2 },
+        { id: 1028, name: 'Neighborhood Market', city: 'Amarillo', lat: 35.22, lng: -101.83, tnt: 83.5 },
+        { id: 1029, name: 'Supercenter', city: 'Midland', lat: 31.99, lng: -102.08, tnt: 69.8 },
+        { id: 1030, name: 'Supercenter', city: 'Odessa', lat: 31.85, lng: -102.37, tnt: 91.4 },
+        { id: 1031, name: 'Supercenter', city: 'Waco', lat: 31.55, lng: -97.15, tnt: 95.9 },
+        { id: 1032, name: 'Neighborhood Market', city: 'Temple', lat: 31.10, lng: -97.34, tnt: 88.2 },
+        { id: 1033, name: 'Supercenter', city: 'Killeen', lat: 31.12, lng: -97.73, tnt: 76.4 },
+        { id: 1034, name: 'Supercenter', city: 'Tyler', lat: 32.35, lng: -95.30, tnt: 93.8 },
+        { id: 1035, name: 'Supercenter', city: 'Longview', lat: 32.50, lng: -94.74, tnt: 90.1 },
+        { id: 1036, name: 'Neighborhood Market', city: 'Beaumont', lat: 30.08, lng: -94.13, tnt: 84.7 },
+        { id: 1037, name: 'Supercenter', city: 'Abilene', lat: 32.45, lng: -99.73, tnt: 96.5 },
+        { id: 1038, name: 'Supercenter', city: 'San Angelo', lat: 31.46, lng: -100.44, tnt: 89.3 },
+        { id: 1039, name: 'Neighborhood Market', city: 'Wichita Falls', lat: 33.91, lng: -98.49, tnt: 77.6 },
+        { id: 1040, name: 'Supercenter', city: 'College Station', lat: 30.63, lng: -96.33, tnt: 94.2 },
+    ];
+
+    // Initialize map
+    const map = L.map('map').setView([31.0, -99.5], 6);
+    
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(map);
+
+    // Stats counters
+    let excellent = 0, good = 0, warning = 0, critical = 0;
+
+    // Add markers for each store
+    STORES.forEach(store => {
+        // Determine color based on TnT
+        let color, status;
+        if (store.tnt >= 95) {
+            color = '#10b981'; status = 'Excellent'; excellent++;
+        } else if (store.tnt >= 85) {
+            color = '#f59e0b'; status = 'Good'; good++;
+        } else if (store.tnt >= 75) {
+            color = '#f97316'; status = 'Warning'; warning++;
+        } else {
+            color = '#ef4444'; status = 'Critical'; critical++;
+        }
+
+        // Create marker
+        const marker = L.circleMarker([store.lat, store.lng], {
+            radius: 14,
+            fillColor: color,
+            color: '#ffffff',
+            weight: 3,
+            opacity: 1,
+            fillOpacity: 0.9
+        }).addTo(map);
+
+        // Add popup
+        marker.bindPopup(`
+            <div style="font-family: system-ui; min-width: 200px;">
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">Store #${store.id}</div>
+                <div style="color: #666; margin-bottom: 8px;">${store.name}<br>${store.city}, TX</div>
+                <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: ${color};">${store.tnt.toFixed(1)}%</div>
+                    <div style="font-size: 12px; color: #666;">TnT Score</div>
+                    <div style="margin-top: 4px; font-size: 11px; font-weight: 600; color: ${color};">${status}</div>
+                </div>
+            </div>
+        `);
+
+        // Add tooltip on hover
+        marker.bindTooltip(`Store #${store.id}: ${store.tnt.toFixed(1)}%`, {
+            permanent: false,
+            direction: 'top'
+        });
+    });
+
+    // Update stats
+    document.getElementById('statExcellent').textContent = excellent;
+    document.getElementById('statGood').textContent = good;
+    document.getElementById('statWarning').textContent = warning;
+    document.getElementById('statCritical').textContent = critical;
+    document.getElementById('storeCount').textContent = `${STORES.length} stores loaded`;
+
+    console.log('✅ Heat map loaded with', STORES.length, 'stores');
+    </script>
+</body>
+</html>
