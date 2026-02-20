@@ -34,8 +34,11 @@ function initSuperDashboard(data) {
   SuperState.trendMonths = data.trend_months || [];
   SuperState.woCategories = data.wo_categories || {};
   SuperState.milestones = data.milestones || [];
+  SuperState.stores = data.stores || [];
+  SuperState.ahuRtu = data.ahu_rtu || [];
   
   populateDirectorDropdown();
+  renderRegionalManagersGrid();
   renderTrendsSection();
   renderDirectorComparison();
   renderMilestones();
@@ -86,6 +89,53 @@ function changeDirector(directorId) {
 function getDirectorName(id) {
   const d = SuperState.directors.find(d => d.id === id);
   return d ? d.name : id;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// YOUR REGIONAL MANAGERS
+// ══════════════════════════════════════════════════════════════════════
+function renderRegionalManagersGrid() {
+  const container = document.getElementById('regionalManagersGrid');
+  if (!container) return;
+  
+  // Calculate stats for each Regional Manager from store data
+  const managers = ['ERIC GRAY', 'JASON MCALESTER', 'DAVID GUESS', 'DANE CLAYTON'];
+  
+  let html = '';
+  managers.forEach(mgr => {
+    const mgrStores = SuperState.stores.filter(s => s.mgr === mgr);
+    const withTnT = mgrStores.filter(s => s.tit != null);
+    const avgTnT = withTnT.length ? (withTnT.reduce((a, s) => a + s.tit, 0) / withTnT.length).toFixed(1) : 'N/A';
+    const wos = SuperState.ahuRtu.filter(w => w.mgr === mgr);
+    const aged = wos.filter(w => w.age_days > 14).length;
+    
+    const tntColor = parseFloat(avgTnT) >= 93 ? '#2a8703' : parseFloat(avgTnT) >= 90 ? '#f59e0b' : '#ea1100';
+    const agedColor = aged === 0 ? '#2a8703' : aged <= 2 ? '#f59e0b' : '#ea1100';
+    
+    html += `
+      <div class="bg-white rounded-xl p-4 border-2 border-blue-100 hover:border-blue-400 transition-all cursor-pointer shadow-sm hover:shadow-lg"
+           onclick="filterByManager('${mgr}')">
+        <div class="font-bold text-blue-800 mb-2">${mgr}</div>
+        <div class="grid grid-cols-3 gap-2 text-center text-sm">
+          <div>
+            <div class="text-lg font-bold text-gray-700">${mgrStores.length}</div>
+            <div class="text-xs text-gray-500">Stores</div>
+          </div>
+          <div>
+            <div class="text-lg font-bold" style="color: ${tntColor}">${avgTnT}%</div>
+            <div class="text-xs text-gray-500">TnT</div>
+          </div>
+          <div>
+            <div class="text-lg font-bold" style="color: ${agedColor}">${aged}</div>
+            <div class="text-xs text-gray-500">Aged WOs</div>
+          </div>
+        </div>
+        <div class="mt-2 text-xs text-blue-600 text-center">→ Click to filter</div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
 }
 
 function toggleComparisonMode() {

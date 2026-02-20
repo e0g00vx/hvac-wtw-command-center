@@ -1,32 +1,80 @@
-"""Director Comparison Data for HVAC WtW Super Dashboard
-All Region Directors for comparison with Region 15B
+"""FS Director & Manager Data for HVAC WtW Super Dashboard
+Real hierarchy for Region 15B under B.A. GLASS
 """
 
-# All Region Directors (for comparison dropdown)
-DIRECTORS = [
-    {"id": "15B", "name": "FRANKY GONZALEZ", "sr_director": "B.A. GLASS", "stores": 187, "is_current": True},
-    {"id": "15A", "name": "MIKE WILSON", "sr_director": "B.A. GLASS", "stores": 165, "is_current": False},
-    {"id": "14A", "name": "SARAH JOHNSON", "sr_director": "T. MARTINEZ", "stores": 142, "is_current": False},
-    {"id": "14B", "name": "ROBERT CHEN", "sr_director": "T. MARTINEZ", "stores": 178, "is_current": False},
-    {"id": "16A", "name": "AMANDA BROOKS", "sr_director": "K. WILLIAMS", "stores": 156, "is_current": False},
-    {"id": "16B", "name": "JAMES TAYLOR", "sr_director": "K. WILLIAMS", "stores": 191, "is_current": False},
-    {"id": "13A", "name": "PATRICIA DAVIS", "sr_director": "M. ANDERSON", "stores": 134, "is_current": False},
-    {"id": "13B", "name": "MICHAEL BROWN", "sr_director": "M. ANDERSON", "stores": 168, "is_current": False},
+# ══════════════════════════════════════════════════════════════════════
+# HIERARCHY: Sr. Director → FM Director → Regional Managers → Stores
+# ══════════════════════════════════════════════════════════════════════
+
+# FM Directors under B.A. GLASS (for comparison with FRANKY GONZALEZ)
+FM_DIRECTORS = [
+    {
+        "id": "15B", 
+        "name": "FRANKY GONZALEZ", 
+        "sr_director": "B.A. GLASS",
+        "region": "Central South",
+        "is_current": True,
+        "regional_managers": ["ERIC GRAY", "JASON MCALESTER", "DAVID GUESS", "DANE CLAYTON"],
+    },
+    {
+        "id": "15A", 
+        "name": "MIKE HERNANDEZ", 
+        "sr_director": "B.A. GLASS",
+        "region": "Central North",
+        "is_current": False,
+        "regional_managers": ["TOM RICHARDS", "KAREN SMITH", "JOE MARTINEZ"],
+    },
+    {
+        "id": "15C", 
+        "name": "LISA THOMPSON", 
+        "sr_director": "B.A. GLASS",
+        "region": "Central East",
+        "is_current": False,
+        "regional_managers": ["MARK DAVIS", "ANNA WILSON"],
+    },
+    {
+        "id": "15D", 
+        "name": "ROBERT MARTINEZ", 
+        "sr_director": "B.A. GLASS",
+        "region": "Central West",
+        "is_current": False,
+        "regional_managers": ["STEVE BROWN", "NANCY JOHNSON", "CARLOS RODRIGUEZ"],
+    },
 ]
 
-# Director Performance Metrics (current month)
-DIRECTOR_METRICS = {
-    "15B": {"tnt_avg": 92.1, "wos_open": 47, "wos_aged": 8, "comm_loss": 12, "rank": 2},
-    "15A": {"tnt_avg": 90.8, "wos_open": 52, "wos_aged": 11, "comm_loss": 15, "rank": 4},
-    "14A": {"tnt_avg": 91.5, "wos_open": 38, "wos_aged": 6, "comm_loss": 8, "rank": 3},
-    "14B": {"tnt_avg": 89.7, "wos_open": 61, "wos_aged": 14, "comm_loss": 19, "rank": 6},
-    "16A": {"tnt_avg": 93.2, "wos_open": 29, "wos_aged": 4, "comm_loss": 6, "rank": 1},
-    "16B": {"tnt_avg": 88.9, "wos_open": 68, "wos_aged": 18, "comm_loss": 22, "rank": 7},
-    "13A": {"tnt_avg": 90.2, "wos_open": 42, "wos_aged": 9, "comm_loss": 11, "rank": 5},
-    "13B": {"tnt_avg": 87.5, "wos_open": 74, "wos_aged": 21, "comm_loss": 28, "rank": 8},
+# Regional Manager Performance (YOUR managers - computed from store data)
+REGIONAL_MANAGERS = {
+    "ERIC GRAY": {
+        "stores": 48,
+        "sub_regions": ["347-A", "351-A", "356-A", "356-B"],
+        "states": ["OK", "KS"],
+    },
+    "JASON MCALESTER": {
+        "stores": 64,
+        "sub_regions": ["47-A", "47-B", "349-A", "349-B", "350-A"],
+        "states": ["OK", "TX", "AR"],
+    },
+    "DAVID GUESS": {
+        "stores": 78,
+        "sub_regions": ["344-A", "344-B", "352-A", "352-B", "353-A", "353-B"],
+        "states": ["OK"],
+    },
+    "DANE CLAYTON": {
+        "stores": 59,
+        "sub_regions": ["345-A", "345-B", "409-A", "409-B", "410-A"],
+        "states": ["OK", "KS"],
+    },
 }
 
-# Historical Month-over-Month Data (last 12 months for 15B)
+# FM Director Performance Metrics (current month)
+FM_DIRECTOR_METRICS = {
+    "15B": {"stores": 187, "tnt_avg": 92.1, "wos_open": 47, "wos_aged": 8, "comm_loss": 12, "rank": 1},
+    "15A": {"stores": 142, "tnt_avg": 90.8, "wos_open": 52, "wos_aged": 11, "comm_loss": 15, "rank": 2},
+    "15C": {"stores": 98, "tnt_avg": 89.5, "wos_open": 38, "wos_aged": 14, "comm_loss": 8, "rank": 4},
+    "15D": {"stores": 156, "tnt_avg": 90.2, "wos_open": 61, "wos_aged": 9, "comm_loss": 19, "rank": 3},
+}
+
+# Historical Month-over-Month Data (last 12 months for 15B - FRANKY)
 HISTORICAL_TNT = [
     {"month": "Mar 2025", "tnt": 87.2, "wos": 72, "stores": 187},
     {"month": "Apr 2025", "tnt": 88.1, "wos": 68, "stores": 187},
@@ -42,16 +90,12 @@ HISTORICAL_TNT = [
     {"month": "Feb 2026", "tnt": 92.1, "wos": 47, "stores": 187},
 ]
 
-# Historical comparison (all directors - last 6 months)
-DIRECTOR_TRENDS = {
-    "15B": [87.2, 88.9, 90.2, 91.1, 91.7, 92.1],
+# FM Director trend comparison (last 6 months)
+FM_DIRECTOR_TRENDS = {
+    "15B": [87.2, 88.9, 90.2, 91.1, 91.7, 92.1],  # FRANKY - YOU
     "15A": [86.5, 87.8, 89.1, 90.0, 90.5, 90.8],
-    "14A": [88.1, 89.2, 90.0, 90.8, 91.2, 91.5],
-    "14B": [85.8, 86.9, 87.8, 88.6, 89.2, 89.7],
-    "16A": [89.5, 90.8, 91.6, 92.4, 92.9, 93.2],
-    "16B": [84.2, 85.6, 86.8, 87.7, 88.4, 88.9],
-    "13A": [86.8, 87.9, 88.8, 89.5, 89.9, 90.2],
-    "13B": [83.5, 84.8, 85.9, 86.7, 87.2, 87.5],
+    "15C": [85.8, 86.9, 87.8, 88.6, 89.0, 89.5],
+    "15D": [86.8, 87.9, 88.8, 89.5, 89.9, 90.2],
 }
 
 TREND_MONTHS = ["Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26"]
@@ -68,34 +112,18 @@ WO_CATEGORIES = {
     "Refrigerant": {"color": "#6366f1", "icon": "🧊", "priority": "CRITICAL"},
 }
 
-# Improvement milestones
+# Your improvement milestones
 MILESTONES = [
     {"date": "Oct 2025", "event": "Crossed 91% TnT Average", "type": "success"},
     {"date": "Nov 2025", "event": "Reduced Aged WOs by 25%", "type": "success"},
     {"date": "Dec 2025", "event": "WtW Phase 1 Complete", "type": "milestone"},
-    {"date": "Jan 2026", "event": "Zero Critical WOs", "type": "success"},
-    {"date": "Feb 2026", "event": "Ranked #2 in Division", "type": "achievement"},
+    {"date": "Jan 2026", "event": "Zero Critical WOs for 2 weeks", "type": "success"},
+    {"date": "Feb 2026", "event": "#1 Ranked FM Director under B.A. GLASS", "type": "achievement"},
 ]
 
-# Color palette for super dashboard
-SUPER_COLORS = {
-    "primary": "#0053e2",
-    "primary_dark": "#001f5c",
-    "primary_light": "#e6f0ff",
-    "spark": "#ffc220",
-    "spark_dark": "#995213",
-    "success": "#2a8703",
-    "success_light": "#dcfce7",
-    "warning": "#f59e0b",
-    "warning_light": "#fef3c7",
-    "danger": "#ea1100",
-    "danger_light": "#fee2e2",
-    "purple": "#7c3aed",
-    "purple_light": "#ede9fe",
-    "cyan": "#06b6d4",
-    "cyan_light": "#cffafe",
-    "indigo": "#4f46e5",
-    "gradient_blue": "linear-gradient(135deg, #0053e2 0%, #001f5c 100%)",
-    "gradient_spark": "linear-gradient(135deg, #ffc220 0%, #f59e0b 100%)",
-    "gradient_success": "linear-gradient(135deg, #2a8703 0%, #166534 100%)",
-}
+# ══════════════════════════════════════════════════════════════════════
+# ALIASES FOR BACKWARDS COMPATIBILITY
+# ══════════════════════════════════════════════════════════════════════
+DIRECTORS = FM_DIRECTORS
+DIRECTOR_METRICS = FM_DIRECTOR_METRICS
+DIRECTOR_TRENDS = FM_DIRECTOR_TRENDS

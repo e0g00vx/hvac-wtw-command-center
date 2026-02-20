@@ -253,7 +253,7 @@
           🛒 Sam's Club<span class="badge bg-indigo-100 text-indigo-700" id="samsBadge">0</span>
         </button>
         <button class="tab-btn" data-tab="directors" onclick="switchTab('directors',this)">
-          👥 Directors<span class="badge bg-gradient-to-r from-purple-500 to-indigo-500 text-white">⭐</span>
+          👥 FM Directors<span class="badge bg-gradient-to-r from-purple-500 to-indigo-500 text-white">#1</span>
         </button>
         <button class="tab-btn" data-tab="trends" onclick="switchTab('trends',this)">
           📈 Trends<span class="badge bg-gradient-to-r from-green-500 to-emerald-500 text-white">NEW</span>
@@ -610,26 +610,36 @@
     </div>
   </div>
   
-  <!-- 🌟 SUPER DASHBOARD: Directors Tab -->
+  <!-- 🌟 SUPER DASHBOARD: FM Directors Tab -->
   <div id="tab-directors" class="hidden">
     <!-- Director Selector -->
     <div class="card p-4 mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200">
       <div class="flex items-center justify-between">
         <div>
           <h3 class="font-bold text-purple-800 text-lg flex items-center gap-2">
-            <span class="text-2xl">👥</span> Director Comparison Center
+            <span class="text-2xl">👥</span> FM Director Comparison Center
           </h3>
-          <p class="text-purple-600 text-sm">Compare performance across all FM Directors</p>
+          <p class="text-purple-600 text-sm">Compare performance across FM Directors under B.A. GLASS</p>
         </div>
         <div id="directorSelector"></div>
       </div>
     </div>
     
-    <!-- Director Ranking Table -->
+    <!-- Your Regional Managers Summary -->
+    <div class="card p-5 mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500">
+      <h3 class="font-bold text-blue-800 mb-4 flex items-center gap-2">
+        <span>👤</span> Your Regional Managers (Region 15B)
+      </h3>
+      <div class="grid grid-cols-4 gap-4" id="regionalManagersGrid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    
+    <!-- FM Director Ranking Table -->
     <div class="card p-5 mb-6">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-bold text-gray-700 flex items-center gap-2">
-          <span>🏆</span> Director Performance Rankings
+          <span>🏆</span> FM Director Performance Rankings (under B.A. GLASS)
         </h3>
         <button onclick="exportDirectorReport()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold flex items-center gap-2">
           <span>📊</span> Export Report
