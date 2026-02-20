@@ -76,6 +76,12 @@ async function loadData() {
     S.refreshInterval = data.config?.refresh_interval || 300;
     updateLastRefresh();
     updateBadges();
+    
+    // Initialize Super Dashboard features
+    if (typeof initSuperDashboard === 'function') {
+      initSuperDashboard(data);
+    }
+    
     console.log('✅ Data loaded:', S.stores.length, 'stores,', S.wtwStatus.length, 'WTW stores');
   } catch (e) {
     console.error('Failed to load data:', e);
@@ -203,6 +209,21 @@ function renderActiveTab() {
     case 'wtw': renderWtW(); break;
     case 'projects': renderProjects(); break;
     case 'sams': renderSams(); break;
+    case 'directors': renderDirectorsTab(); break;
+    case 'trends': renderTrendsTab(); break;
+  }
+}
+
+// Super Dashboard tab renderers
+function renderDirectorsTab() {
+  if (typeof renderDirectorComparison === 'function') {
+    renderDirectorComparison();
+  }
+}
+
+function renderTrendsTab() {
+  if (typeof renderTrendsSection === 'function') {
+    renderTrendsSection();
   }
 }
 

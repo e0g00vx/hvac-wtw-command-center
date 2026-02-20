@@ -192,6 +192,7 @@ def run_bq_query(query: str) -> list[dict]:
 def load_fallback_data():
     """Load data from embedded Python data module."""
     from data import STORES, AHU_RTU_WOS, COMM_LOSS, LEAK_SUMMARY, PROJECTS, FS_MANAGERS, WTW_STATUS, WTW_PHASES
+    from data_directors import DIRECTORS, DIRECTOR_METRICS, HISTORICAL_TNT, DIRECTOR_TRENDS, TREND_MONTHS, WO_CATEGORIES, MILESTONES
     
     _cache["stores"] = STORES
     _cache["ahu_rtu"] = AHU_RTU_WOS
@@ -202,7 +203,16 @@ def load_fallback_data():
     _cache["wtw_status"] = WTW_STATUS
     _cache["wtw_phases"] = WTW_PHASES
     
-    log.info(f"Loaded embedded data: {len(STORES)} stores, {len(AHU_RTU_WOS)} WOs, {len(WTW_STATUS)} WTW stores")
+    # Director comparison data
+    _cache["directors"] = DIRECTORS
+    _cache["director_metrics"] = DIRECTOR_METRICS
+    _cache["historical_tnt"] = HISTORICAL_TNT
+    _cache["director_trends"] = DIRECTOR_TRENDS
+    _cache["trend_months"] = TREND_MONTHS
+    _cache["wo_categories"] = WO_CATEGORIES
+    _cache["milestones"] = MILESTONES
+    
+    log.info(f"Loaded embedded data: {len(STORES)} stores, {len(AHU_RTU_WOS)} WOs, {len(WTW_STATUS)} WTW stores, {len(DIRECTORS)} directors")
 
 def refresh_data():
     """Refresh all data from BigQuery or fallback sources."""
@@ -260,7 +270,7 @@ async def index(request: Request):
 
 @app.get("/api/data")
 async def get_all_data():
-    """Return all cached data."""
+    """Return all cached data including director comparison."""
     return JSONResponse({
         "stores": _cache["stores"],
         "ahu_rtu": _cache["ahu_rtu"],
@@ -270,6 +280,13 @@ async def get_all_data():
         "fs_managers": _cache.get("fs_managers", {}),
         "wtw_status": _cache.get("wtw_status", []),
         "wtw_phases": _cache.get("wtw_phases", {}),
+        "directors": _cache.get("directors", []),
+        "director_metrics": _cache.get("director_metrics", {}),
+        "historical_tnt": _cache.get("historical_tnt", []),
+        "director_trends": _cache.get("director_trends", {}),
+        "trend_months": _cache.get("trend_months", []),
+        "wo_categories": _cache.get("wo_categories", {}),
+        "milestones": _cache.get("milestones", []),
         "last_refresh": _cache["last_refresh"],
         "refresh_count": _cache["refresh_count"],
         "config": {
