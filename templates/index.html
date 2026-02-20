@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Region {{ region }} — HVAC Win-the-Winter Command Center</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --wm-blue: #0053e2;
+    --wm-blue-dark: #001f5c;
+    --wm-spark: #ffc220;
+    --wm-green: #2a8703;
+    --wm-red: #ea1100;
+    --wm-orange: #f47920;
+  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f5f5; margin: 0; }
+  .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .card-accent { border-left: 4px solid; }
+  .glass-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
+  .kpi-card { transition: all 0.2s; cursor: pointer; }
+  .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,83,226,0.15); }
+  
+  /* Tab Navigation */
+  .tab-nav { display: flex; gap: 2px; background: #e5e7eb; padding: 4px; border-radius: 12px; }
+  .tab-btn { padding: 10px 18px; font-size: 13px; font-weight: 600; border: none; background: transparent; 
+             color: #666; border-radius: 8px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .tab-btn:hover { background: rgba(255,255,255,0.7); color: var(--wm-blue); }
+  .tab-btn.active { background: white; color: var(--wm-blue); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .tab-btn .badge { display: inline-block; min-width: 20px; padding: 2px 6px; border-radius: 10px; 
+                   font-size: 10px; font-weight: 700; margin-left: 6px; }
+  
+  /* Map */
+  #map { width: 100%; height: 400px; border-radius: 12px; }
+  .legend { background: white; padding: 12px 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 12px; }
+  .legend i { width: 14px; height: 14px; display: inline-block; margin-right: 6px; border-radius: 50%; vertical-align: middle; }
+  
+  /* Tables */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl th { padding: 10px 12px; text-align: left; background: #f8fafc; border-bottom: 2px solid #e5e7eb; 
+            font-weight: 600; color: #666; position: sticky; top: 0; z-index: 1; }
+  .tbl td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
+  .tbl tr:hover { background: #f0f7ff; }
+  .tbl tr.clickable { cursor: pointer; }
+  
+  /* Status Indicators */
+  .pulse { animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .live-dot { width: 8px; height: 8px; background: #2a8703; border-radius: 50%; display: inline-block; 
+              animation: pulse 1.5s ease-in-out infinite; margin-right: 6px; }
+  
+  /* Charts */
+  .chart-container { position: relative; height: 250px; }
+  
+  /* Filters */
+  .filter-chip { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; 
+                 border: 1px solid #e5e7eb; cursor: pointer; transition: all 0.15s; }
+  .filter-chip:hover { border-color: var(--wm-blue); background: #f0f7ff; }
+  .filter-chip.active { background: var(--wm-blue); color: white; border-color: var(--wm-blue); }
+  
+  .filter-select { border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; font-size: 13px; 
+                   min-width: 140px; outline: none; }
+  .filter-select:focus { border-color: var(--wm-blue); box-shadow: 0 0 0 3px rgba(0,83,226,0.1); }
+  
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e293b; 
+           color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; 
+           display: none; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+  .toast.show { display: block; animation: slideUp 0.3s ease-out; }
+  @keyframes slideUp { from { transform: translateX(-50%) translateY(20px); opacity: 0; } }
+  
+  /* Countdown */
+  .countdown-ring { width: 40px; height: 40px; }
+  .countdown-ring circle { fill: none; stroke-width: 3; }
+  .countdown-ring .bg { stroke: #e5e7eb; }
+  .countdown-ring .fg { stroke: var(--wm-blue); stroke-linecap: round; transform: rotate(-90deg); transform-origin: center; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="text-white" style="background: linear-gradient(135deg, var(--wm-blue) 0%, var(--wm-blue-dark) 100%)">
+  <div class="max-w-[1600px] mx-auto px-6 py-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="text-4xl">❄️</div>
+        <div>
+          <h1 class="text-xl font-bold">Region {{ region }} — HVAC Win-the-Winter Command Center</h1>
+          <p class="text-blue-200 text-sm">Sr. Director: {{ sr_director }} | FM Director: {{ fm_director }} | FY26</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="text-center">
+          <div class="flex items-center gap-2">
+            <span class="live-dot"></span>
+            <span class="text-sm font-semibold">LIVE</span>
+          </div>
+          <div class="text-blue-200 text-xs" id="lastRefresh">Loading...</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="countdown-ring" viewBox="0 0 40 40">
+            <circle class="bg" cx="20" cy="20" r="17"/>
+            <circle class="fg" id="countdownRing" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/>
+          </svg>
+          <div class="text-xs"><span id="countdown">5:00</span><br>refresh</div>
+        </div>
+        <button onclick="manualRefresh()" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-semibold transition">
+          🔄 Refresh Now
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Tab Navigation -->
+<nav class="bg-white border-b shadow-sm sticky top-0 z-50">
+  <div class="max-w-[1600px] mx-auto px-6 py-3">
+    <div class="flex items-center justify-between">
+      <div class="tab-nav">
+        <button class="tab-btn active" data-tab="executive" onclick="switchTab('executive',this)">
+          📊 Executive
+        </button>
+        <button class="tab-btn" data-tab="heatmap" onclick="switchTab('heatmap',this)">
+          🗺️ Heat Map
+        </button>
+        <button class="tab-btn" data-tab="ahurtu" onclick="switchTab('ahurtu',this)">
+          ❄️ AHU/RTU<span class="badge bg-purple-100 text-purple-700" id="ahuBadge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="commloss" onclick="switchTab('commloss',this)">
+          📡 Comm Loss<span class="badge bg-orange-100 text-orange-700" id="commBadge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="leaks" onclick="switchTab('leaks',this)">
+          💧 Leak Summary<span class="badge bg-blue-100 text-blue-700" id="leakBadge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="wtw" onclick="switchTab('wtw',this)">
+          ❄️ WtW Status<span class="badge bg-cyan-100 text-cyan-700" id="wtwBadge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="projects" onclick="switchTab('projects',this)">
+          🏗️ Projects<span class="badge bg-green-100 text-green-700" id="projBadge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="sams" onclick="switchTab('sams',this)">
+          🛒 Sam's Club<span class="badge bg-indigo-100 text-indigo-700" id="samsBadge">0</span>
+        </button>
+      </div>
+      <div class="flex items-center gap-3">
+        <select class="filter-select" id="filterManager" onchange="applyFilters()">
+          <option value="">All Managers</option>
+        </select>
+        <select class="filter-select" id="filterType" onchange="applyFilters()">
+          <option value="">All Store Types</option>
+          <option value="Supercenter">Supercenter</option>
+          <option value="NHM">Neighborhood Market</option>
+          <option value="Sams">Sam's Club</option>
+          <option value="Discount">Walmart Discount</option>
+        </select>
+        <input type="text" class="filter-select w-48" placeholder="🔍 Search..." id="searchInput" oninput="applyFilters()">
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="max-w-[1600px] mx-auto px-6 py-6">
+  
+  <!-- Executive Tab -->
+  <div id="tab-executive">
+    <!-- KPI Row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6" id="kpiRow"></div>
+    
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div class="card p-4">
+        <h3 class="font-bold text-gray-700 mb-3 flex items-center gap-2">📊 TnT Distribution</h3>
+        <div class="chart-container"><canvas id="chartTnT"></canvas></div>
+      </div>
+      <div class="card p-4">
+        <h3 class="font-bold text-gray-700 mb-3 flex items-center gap-2">👤 By Manager</h3>
+        <div class="chart-container"><canvas id="chartManager"></canvas></div>
+      </div>
+      <div class="card p-4">
+        <h3 class="font-bold text-gray-700 mb-3 flex items-center gap-2">🏢 By Store Type</h3>
+        <div class="chart-container"><canvas id="chartType"></canvas></div>
+      </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="card card-accent p-5" style="border-left-color: #ea1100; background: linear-gradient(135deg, #fef2f2 0%, white 100%);">
+        <h3 class="font-bold text-red-800 flex items-center gap-2 mb-3">⚠️ Critical Attention Required</h3>
+        <div id="criticalItems" class="space-y-2 text-sm"></div>
+      </div>
+      <div class="card card-accent p-5" style="border-left-color: #2a8703; background: linear-gradient(135deg, #ecfdf5 0%, white 100%);">
+        <h3 class="font-bold text-green-800 flex items-center gap-2 mb-3">🏆 Wins & Excellence</h3>
+        <div id="winItems" class="space-y-2 text-sm"></div>
+      </div>
+    </div>
+    
+    <!-- Manager Scorecard -->
+    <div class="card p-5 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-gray-700">🏆 Regional Manager Scorecard</h3>
+        <button onclick="exportScorecard()" class="text-xs px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 font-medium">
+          📤 Export
+        </button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="tbl" id="scorecardTable"></table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Heat Map Tab -->
+  <div id="tab-heatmap" class="hidden">
+    <div class="card p-4 mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-gray-700">🗺️ Region {{ region }} Store Heat Map</h3>
+        <div id="mapLayerBtns" class="flex gap-2">
+          <button class="filter-chip active" onclick="setMapLayer('tit',this)">🎯 TnT %</button>
+          <button class="filter-chip" onclick="setMapLayer('ahurtu',this)">❄️ AHU/RTU WOs</button>
+          <button class="filter-chip" onclick="setMapLayer('comm',this)">📡 Comm Loss</button>
+        </div>
+      </div>
+      <div id="map"></div>
+      
+      <!-- Share Section -->
+      <div class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-blue-800 flex items-center gap-2">
+              <span>🔗</span> Share This Dashboard
+            </h4>
+            <p class="text-sm text-blue-600">Auto-refreshes every 5 minutes • Always live data</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="copyShareLink()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2">
+              <span>📋</span> Copy Link
+            </button>
+            <button onclick="openInNewWindow()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium flex items-center gap-2">
+              <span>🚀</span> Open Full Screen
+            </button>
+          </div>
+        </div>
+        <div class="mt-3 flex items-center gap-2">
+          <input type="text" id="shareUrl" readonly value="" 
+                 class="flex-1 px-3 py-2 border rounded-lg bg-white text-sm font-mono text-gray-600">
+          <a href="https://github.com" target="_blank" id="githubLink"
+             class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-medium flex items-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- AHU/RTU Tab -->
+  <div id="tab-ahurtu" class="hidden">
+    <div class="card p-4">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-gray-700">❄️ AHU/RTU Broken Units</h3>
+        <div class="flex gap-2">
+          <select class="filter-select" id="ahuGroupBy" onchange="renderAhuRtu()">
+            <option value="none">No Grouping</option>
+            <option value="type">By Type (AHU/RTU)</option>
+            <option value="manager">By Manager</option>
+            <option value="status">By Status</option>
+            <option value="age">By Age</option>
+          </select>
+        </div>
+      </div>
+      <div id="ahuSummary" class="mb-4"></div>
+      <div id="ahuContent" class="overflow-x-auto max-h-[600px] overflow-y-auto"></div>
+    </div>
+  </div>
+  
+  <!-- Comm Loss Tab -->
+  <div id="tab-commloss" class="hidden">
+    <div class="card p-4">
+      <h3 class="font-bold text-gray-700 mb-4">📡 Communication Loss</h3>
+      <div id="commSummary" class="mb-4"></div>
+      <div id="commContent" class="overflow-x-auto max-h-[600px] overflow-y-auto"></div>
+    </div>
+  </div>
+  
+  <!-- Leak Summary Tab -->
+  <div id="tab-leaks" class="hidden">
+    <div class="card p-4">
+      <h3 class="font-bold text-gray-700 mb-4">💧 Refrigerant Leak Summary - FY26</h3>
+      <div id="leakSummary" class="mb-4"></div>
+      <div id="leakContent" class="overflow-x-auto max-h-[600px] overflow-y-auto"></div>
+    </div>
+  </div>
+  
+  <!-- WtW Status Tab -->
+  <div id="tab-wtw" class="hidden">
+    <div class="card p-4">
+      <h3 class="font-bold text-gray-700 mb-4">❄️ Win-the-Winter Checklist Status</h3>
+      <div id="wtwSummary" class="mb-4"></div>
+      <div id="wtwContent"></div>
+    </div>
+  </div>
+  
+  <!-- Projects Tab -->
+  <div id="tab-projects" class="hidden">
+    <div class="card p-4">
+      <h3 class="font-bold text-gray-700 mb-4">🏗️ Active Projects & Remodels</h3>
+      <div id="projContent" class="overflow-x-auto max-h-[600px] overflow-y-auto"></div>
+    </div>
+  </div>
+  
+  <!-- Sam's Club Tab -->
+  <div id="tab-sams" class="hidden">
+    <div class="card p-4">
+      <h3 class="font-bold text-gray-700 mb-4">🛒 Sam's Club Performance</h3>
+      <div id="samsSummary" class="mb-4"></div>
+      <div id="samsContent" class="overflow-x-auto max-h-[600px] overflow-y-auto"></div>
+    </div>
+  </div>
+  
+</main>
+
+<!-- Footer -->
+<footer class="bg-gray-100 border-t py-4 mt-8">
+  <div class="max-w-[1600px] mx-auto px-6 flex items-center justify-between text-sm text-gray-500">
+    <div>
+      <span class="live-dot"></span>
+      <span>Auto-refreshes every 5 minutes</span>
+    </div>
+    <div>Generated by Luna 🐶 | <span id="footerTime"></span></div>
+    <div class="flex gap-3">
+      <button onclick="copyShareLink()" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+        🔗 Share Link
+      </button>
+      <button onclick="exportAll()" class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+        📤 Export All
+      </button>
+    </div>
+  </div>
+</footer>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Manager Drill-Down Modal -->
+<div id="managerModal" class="modal-backdrop hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <div id="managerModalContent"></div>
+  </div>
+</div>
+
+<!-- KPI Drill-Down Modal -->
+<div id="kpiModal" class="modal-backdrop hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <div id="kpiModalContent"></div>
+  </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+
+</body>
+</html>
