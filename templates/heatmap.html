@@ -3,181 +3,514 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Region 15B Store Heat Map</title>
+    <title>Region 15B Heat Maps</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        #map { height: 600px; width: 100%; border-radius: 12px; }
-        .legend { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .legend-item { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
-        .legend-dot { width: 16px; height: 16px; border-radius: 50%; }
+        .map-container { height: 550px; width: 100%; border-radius: 12px; }
+        .tab-btn { transition: all 0.2s; }
+        .tab-btn.active { background: linear-gradient(135deg, #0053e2, #0ea5e9); color: white; }
+        .tab-btn:not(.active) { background: #f1f5f9; color: #475569; }
+        .tab-btn:not(.active):hover { background: #e2e8f0; }
+        .filter-select { border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+        .filter-select:focus { border-color: #0053e2; outline: none; }
+        .stat-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .legend-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <!-- Header -->
-    <header class="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-6 px-4 shadow-lg">
-        <div class="max-w-7xl mx-auto">
-            <h1 class="text-3xl font-bold">🗺️ Region 15B Store Heat Map</h1>
-            <p class="text-blue-200 mt-1">FM Director: Franky Gonzalez | Sr. Director: B.A. Glass</p>
+    <header class="bg-gradient-to-r from-[#004c91] to-[#0053e2] text-white py-5 px-4 shadow-lg">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold flex items-center gap-2">
+                    <span class="text-3xl">❄️</span> Region 15B Command Center
+                </h1>
+                <p class="text-blue-200 text-sm mt-1">FM Director: Franky Gonzalez | Sr. Director: B.A. Glass | FY26</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-sm text-blue-200">Last Updated:</span>
+                <span class="bg-white/20 px-3 py-1 rounded-lg text-sm font-medium" id="lastUpdate">--</span>
+            </div>
         </div>
     </header>
 
-    <!-- Stats Bar -->
-    <div class="max-w-7xl mx-auto px-4 py-4">
+    <!-- Tab Navigation -->
+    <div class="max-w-7xl mx-auto px-4 pt-6">
+        <div class="flex gap-2 mb-6">
+            <button onclick="switchTab('heatmap')" id="tab-heatmap" class="tab-btn active px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
+                <span>🗺️</span> Heat Map
+            </button>
+            <button onclick="switchTab('rtu')" id="tab-rtu" class="tab-btn px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
+                <span>🚨</span> RTU/AHU Broken
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- HEAT MAP TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <div id="heatmap-content" class="max-w-7xl mx-auto px-4 pb-8">
+        <!-- Filters -->
+        <div class="bg-white rounded-xl shadow p-4 mb-4">
+            <div class="flex flex-wrap items-center gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">FM Director</label>
+                    <select id="filterDirector" onchange="renderHeatMap()" class="filter-select min-w-[180px]">
+                        <option value="">All Directors</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">FS Regional</label>
+                    <select id="filterRegional" onchange="renderHeatMap()" class="filter-select min-w-[180px]">
+                        <option value="">All Regionals</option>
+                    </select>
+                </div>
+                <div class="ml-auto flex items-center gap-4">
+                    <span class="text-sm text-gray-500">Showing: <strong id="storeCount">0</strong> stores</span>
+                    <button onclick="resetFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div class="bg-white rounded-xl p-4 shadow text-center">
+            <div class="stat-card text-center">
                 <p class="text-3xl font-bold text-emerald-600" id="statExcellent">0</p>
-                <p class="text-sm text-gray-500">✅ Excellent (95%+)</p>
+                <p class="text-xs text-gray-500 mt-1">✅ Excellent (95%+)</p>
             </div>
-            <div class="bg-white rounded-xl p-4 shadow text-center">
+            <div class="stat-card text-center">
                 <p class="text-3xl font-bold text-amber-500" id="statGood">0</p>
-                <p class="text-sm text-gray-500">🟡 Good (85-95%)</p>
+                <p class="text-xs text-gray-500 mt-1">🟡 Good (85-95%)</p>
             </div>
-            <div class="bg-white rounded-xl p-4 shadow text-center">
+            <div class="stat-card text-center">
                 <p class="text-3xl font-bold text-orange-500" id="statWarning">0</p>
-                <p class="text-sm text-gray-500">🟠 Warning (75-85%)</p>
+                <p class="text-xs text-gray-500 mt-1">🟠 Warning (75-85%)</p>
             </div>
-            <div class="bg-white rounded-xl p-4 shadow text-center">
+            <div class="stat-card text-center">
                 <p class="text-3xl font-bold text-red-500" id="statCritical">0</p>
-                <p class="text-sm text-gray-500">🔴 Critical (<75%)</p>
+                <p class="text-xs text-gray-500 mt-1">🔴 Critical (<75%)</p>
             </div>
         </div>
-    </div>
 
-    <!-- Map Container -->
-    <div class="max-w-7xl mx-auto px-4 pb-8">
+        <!-- Map -->
         <div class="bg-white rounded-xl shadow-lg p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800">Store TnT Performance Map</h2>
-                <span class="text-sm text-gray-500" id="storeCount">Loading stores...</span>
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-lg font-bold text-gray-800">Store TnT Performance</h2>
+                <div class="flex gap-4 text-xs">
+                    <span class="flex items-center gap-1"><span class="legend-dot" style="background:#10b981"></span> 95%+</span>
+                    <span class="flex items-center gap-1"><span class="legend-dot" style="background:#f59e0b"></span> 85-95%</span>
+                    <span class="flex items-center gap-1"><span class="legend-dot" style="background:#f97316"></span> 75-85%</span>
+                    <span class="flex items-center gap-1"><span class="legend-dot" style="background:#ef4444"></span> <75%</span>
+                </div>
             </div>
-            <div id="map"></div>
+            <div id="heatmapMap" class="map-container"></div>
         </div>
     </div>
 
-    <!-- Legend -->
-    <div class="max-w-7xl mx-auto px-4 pb-8">
-        <div class="bg-white rounded-xl shadow p-4">
-            <h3 class="font-bold text-gray-700 mb-3">Legend - TnT Performance</h3>
-            <div class="flex flex-wrap gap-6">
-                <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div><span>Excellent (95%+)</span></div>
-                <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div><span>Good (85-95%)</span></div>
-                <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span>Warning (75-85%)</span></div>
-                <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div><span>Critical (<75%)</span></div>
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- RTU/AHU BROKEN TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <div id="rtu-content" class="hidden max-w-7xl mx-auto px-4 pb-8">
+        <!-- Filters -->
+        <div class="bg-white rounded-xl shadow p-4 mb-4">
+            <div class="flex flex-wrap items-center gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">FM Director</label>
+                    <select id="rtuFilterDirector" onchange="renderRtuMap()" class="filter-select min-w-[180px]">
+                        <option value="">All Directors</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">FS Regional</label>
+                    <select id="rtuFilterRegional" onchange="renderRtuMap()" class="filter-select min-w-[180px]">
+                        <option value="">All Regionals</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Issue Type</label>
+                    <select id="rtuFilterIssue" onchange="renderRtuMap()" class="filter-select min-w-[150px]">
+                        <option value="all">All Issues</option>
+                        <option value="comm">Comm Loss Only</option>
+                        <option value="alarm">Alarms Only</option>
+                    </select>
+                </div>
+                <div class="ml-auto flex items-center gap-4">
+                    <span class="text-sm text-gray-500">Units with issues: <strong id="rtuIssueCount" class="text-red-600">0</strong></span>
+                    <button onclick="resetRtuFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div class="stat-card text-center border-l-4 border-red-500">
+                <p class="text-3xl font-bold text-red-600" id="rtuCommLoss">0</p>
+                <p class="text-xs text-gray-500 mt-1">📵 Comm Loss</p>
+            </div>
+            <div class="stat-card text-center border-l-4 border-orange-500">
+                <p class="text-3xl font-bold text-orange-600" id="rtuAlarms">0</p>
+                <p class="text-xs text-gray-500 mt-1">⚠️ Active Alarms</p>
+            </div>
+            <div class="stat-card text-center border-l-4 border-amber-500">
+                <p class="text-3xl font-bold text-amber-600" id="rtuOffline">0</p>
+                <p class="text-xs text-gray-500 mt-1">🔴 Offline Units</p>
+            </div>
+            <div class="stat-card text-center border-l-4 border-emerald-500">
+                <p class="text-3xl font-bold text-emerald-600" id="rtuOnline">0</p>
+                <p class="text-xs text-gray-500 mt-1">✅ Online Units</p>
+            </div>
+        </div>
+
+        <!-- Map -->
+        <div class="bg-white rounded-xl shadow-lg p-4 mb-4">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-lg font-bold text-gray-800">🚨 RTU/AHU with Comm Loss & Alarms</h2>
+                <div class="flex gap-4 text-xs">
+                    <span class="flex items-center gap-1"><span class="legend-dot" style="background:#ef4444"></span> Comm Loss</span>
+                    <span class="flex items-center gap-1"><span class="legend-dot" style="background:#f97316"></span> Alarms</span>
+                    <span class="flex items-center gap-1"><span class="legend-dot" style="background:#fbbf24"></span> Multiple Issues</span>
+                </div>
+            </div>
+            <div id="rtuMap" class="map-container"></div>
+        </div>
+
+        <!-- Issue Table -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-4 bg-gradient-to-r from-red-50 to-orange-50 border-b">
+                <h3 class="font-bold text-gray-800">📝 Units Requiring Attention</h3>
+            </div>
+            <div class="overflow-x-auto max-h-80">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-600 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold">Store</th>
+                            <th class="px-4 py-3 text-left font-semibold">Unit</th>
+                            <th class="px-4 py-3 text-left font-semibold">Type</th>
+                            <th class="px-4 py-3 text-left font-semibold">Issue</th>
+                            <th class="px-4 py-3 text-left font-semibold">Director</th>
+                            <th class="px-4 py-3 text-left font-semibold">Days Down</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rtuTableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script>
-    // Texas store locations with realistic data
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // DATA - Stores with Director/Regional assignments
+    // ═══════════════════════════════════════════════════════════════════════════════
+    const DIRECTORS = ['J. Martinez', 'K. Thompson', 'R. Williams', 'M. Johnson', 'L. Davis'];
+    const REGIONALS = ['A. Garcia', 'B. Smith', 'C. Brown', 'D. Wilson', 'E. Anderson', 'F. Taylor'];
+
     const STORES = [
-        { id: 1001, name: 'Supercenter', city: 'Houston', lat: 29.76, lng: -95.37, tnt: 96.2 },
-        { id: 1002, name: 'Supercenter', city: 'Houston NW', lat: 29.85, lng: -95.48, tnt: 88.5 },
-        { id: 1003, name: 'Supercenter', city: 'Houston SE', lat: 29.65, lng: -95.28, tnt: 72.3 },
-        { id: 1004, name: 'Neighborhood Market', city: 'Katy', lat: 29.79, lng: -95.82, tnt: 94.1 },
-        { id: 1005, name: 'Supercenter', city: 'Sugar Land', lat: 29.62, lng: -95.64, tnt: 91.8 },
-        { id: 1006, name: 'Supercenter', city: 'Dallas', lat: 32.78, lng: -96.80, tnt: 97.5 },
-        { id: 1007, name: 'Supercenter', city: 'Dallas North', lat: 32.92, lng: -96.77, tnt: 85.2 },
-        { id: 1008, name: 'Neighborhood Market', city: 'Plano', lat: 33.02, lng: -96.70, tnt: 78.9 },
-        { id: 1009, name: 'Supercenter', city: 'Frisco', lat: 33.15, lng: -96.82, tnt: 92.4 },
-        { id: 1010, name: 'Supercenter', city: 'McKinney', lat: 33.20, lng: -96.62, tnt: 89.7 },
-        { id: 1011, name: 'Supercenter', city: 'San Antonio', lat: 29.42, lng: -98.49, tnt: 95.8 },
-        { id: 1012, name: 'Supercenter', city: 'San Antonio NW', lat: 29.55, lng: -98.62, tnt: 68.4 },
-        { id: 1013, name: 'Neighborhood Market', city: 'New Braunfels', lat: 29.70, lng: -98.12, tnt: 91.2 },
-        { id: 1014, name: 'Supercenter', city: 'Austin', lat: 30.27, lng: -97.74, tnt: 93.6 },
-        { id: 1015, name: 'Supercenter', city: 'Round Rock', lat: 30.51, lng: -97.68, tnt: 96.8 },
-        { id: 1016, name: 'Neighborhood Market', city: 'Cedar Park', lat: 30.51, lng: -97.82, tnt: 82.1 },
-        { id: 1017, name: 'Supercenter', city: 'Fort Worth', lat: 32.75, lng: -97.33, tnt: 90.5 },
-        { id: 1018, name: 'Supercenter', city: 'Arlington', lat: 32.73, lng: -97.11, tnt: 74.2 },
-        { id: 1019, name: 'Neighborhood Market', city: 'Grand Prairie', lat: 32.75, lng: -96.99, tnt: 87.9 },
-        { id: 1020, name: 'Supercenter', city: 'Irving', lat: 32.81, lng: -96.95, tnt: 95.3 },
-        { id: 1021, name: 'Supercenter', city: 'Corpus Christi', lat: 27.80, lng: -97.40, tnt: 88.7 },
-        { id: 1022, name: 'Supercenter', city: 'McAllen', lat: 26.20, lng: -98.23, tnt: 71.5 },
-        { id: 1023, name: 'Neighborhood Market', city: 'Brownsville', lat: 25.90, lng: -97.50, tnt: 79.8 },
-        { id: 1024, name: 'Supercenter', city: 'Laredo', lat: 27.51, lng: -99.51, tnt: 92.1 },
-        { id: 1025, name: 'Supercenter', city: 'El Paso', lat: 31.76, lng: -106.49, tnt: 94.6 },
-        { id: 1026, name: 'Supercenter', city: 'El Paso East', lat: 31.78, lng: -106.32, tnt: 86.3 },
-        { id: 1027, name: 'Supercenter', city: 'Lubbock', lat: 33.58, lng: -101.85, tnt: 97.2 },
-        { id: 1028, name: 'Neighborhood Market', city: 'Amarillo', lat: 35.22, lng: -101.83, tnt: 83.5 },
-        { id: 1029, name: 'Supercenter', city: 'Midland', lat: 31.99, lng: -102.08, tnt: 69.8 },
-        { id: 1030, name: 'Supercenter', city: 'Odessa', lat: 31.85, lng: -102.37, tnt: 91.4 },
-        { id: 1031, name: 'Supercenter', city: 'Waco', lat: 31.55, lng: -97.15, tnt: 95.9 },
-        { id: 1032, name: 'Neighborhood Market', city: 'Temple', lat: 31.10, lng: -97.34, tnt: 88.2 },
-        { id: 1033, name: 'Supercenter', city: 'Killeen', lat: 31.12, lng: -97.73, tnt: 76.4 },
-        { id: 1034, name: 'Supercenter', city: 'Tyler', lat: 32.35, lng: -95.30, tnt: 93.8 },
-        { id: 1035, name: 'Supercenter', city: 'Longview', lat: 32.50, lng: -94.74, tnt: 90.1 },
-        { id: 1036, name: 'Neighborhood Market', city: 'Beaumont', lat: 30.08, lng: -94.13, tnt: 84.7 },
-        { id: 1037, name: 'Supercenter', city: 'Abilene', lat: 32.45, lng: -99.73, tnt: 96.5 },
-        { id: 1038, name: 'Supercenter', city: 'San Angelo', lat: 31.46, lng: -100.44, tnt: 89.3 },
-        { id: 1039, name: 'Neighborhood Market', city: 'Wichita Falls', lat: 33.91, lng: -98.49, tnt: 77.6 },
-        { id: 1040, name: 'Supercenter', city: 'College Station', lat: 30.63, lng: -96.33, tnt: 94.2 },
+        { id: 1001, name: 'Supercenter', city: 'Houston', lat: 29.76, lng: -95.37, tnt: 96.2, director: 'J. Martinez', regional: 'A. Garcia' },
+        { id: 1002, name: 'Supercenter', city: 'Houston NW', lat: 29.85, lng: -95.48, tnt: 88.5, director: 'J. Martinez', regional: 'A. Garcia' },
+        { id: 1003, name: 'Supercenter', city: 'Houston SE', lat: 29.65, lng: -95.28, tnt: 72.3, director: 'J. Martinez', regional: 'B. Smith' },
+        { id: 1004, name: 'Neighborhood Market', city: 'Katy', lat: 29.79, lng: -95.82, tnt: 94.1, director: 'J. Martinez', regional: 'B. Smith' },
+        { id: 1005, name: 'Supercenter', city: 'Sugar Land', lat: 29.62, lng: -95.64, tnt: 91.8, director: 'J. Martinez', regional: 'A. Garcia' },
+        { id: 1006, name: 'Supercenter', city: 'Dallas', lat: 32.78, lng: -96.80, tnt: 97.5, director: 'K. Thompson', regional: 'C. Brown' },
+        { id: 1007, name: 'Supercenter', city: 'Dallas North', lat: 32.92, lng: -96.77, tnt: 85.2, director: 'K. Thompson', regional: 'C. Brown' },
+        { id: 1008, name: 'Neighborhood Market', city: 'Plano', lat: 33.02, lng: -96.70, tnt: 78.9, director: 'K. Thompson', regional: 'D. Wilson' },
+        { id: 1009, name: 'Supercenter', city: 'Frisco', lat: 33.15, lng: -96.82, tnt: 92.4, director: 'K. Thompson', regional: 'D. Wilson' },
+        { id: 1010, name: 'Supercenter', city: 'McKinney', lat: 33.20, lng: -96.62, tnt: 89.7, director: 'K. Thompson', regional: 'C. Brown' },
+        { id: 1011, name: 'Supercenter', city: 'San Antonio', lat: 29.42, lng: -98.49, tnt: 95.8, director: 'R. Williams', regional: 'E. Anderson' },
+        { id: 1012, name: 'Supercenter', city: 'San Antonio NW', lat: 29.55, lng: -98.62, tnt: 68.4, director: 'R. Williams', regional: 'E. Anderson' },
+        { id: 1013, name: 'Neighborhood Market', city: 'New Braunfels', lat: 29.70, lng: -98.12, tnt: 91.2, director: 'R. Williams', regional: 'F. Taylor' },
+        { id: 1014, name: 'Supercenter', city: 'Austin', lat: 30.27, lng: -97.74, tnt: 93.6, director: 'M. Johnson', regional: 'F. Taylor' },
+        { id: 1015, name: 'Supercenter', city: 'Round Rock', lat: 30.51, lng: -97.68, tnt: 96.8, director: 'M. Johnson', regional: 'F. Taylor' },
+        { id: 1016, name: 'Neighborhood Market', city: 'Cedar Park', lat: 30.51, lng: -97.82, tnt: 82.1, director: 'M. Johnson', regional: 'E. Anderson' },
+        { id: 1017, name: 'Supercenter', city: 'Fort Worth', lat: 32.75, lng: -97.33, tnt: 90.5, director: 'K. Thompson', regional: 'D. Wilson' },
+        { id: 1018, name: 'Supercenter', city: 'Arlington', lat: 32.73, lng: -97.11, tnt: 74.2, director: 'K. Thompson', regional: 'C. Brown' },
+        { id: 1019, name: 'Neighborhood Market', city: 'Grand Prairie', lat: 32.75, lng: -96.99, tnt: 87.9, director: 'K. Thompson', regional: 'D. Wilson' },
+        { id: 1020, name: 'Supercenter', city: 'Irving', lat: 32.81, lng: -96.95, tnt: 95.3, director: 'K. Thompson', regional: 'C. Brown' },
+        { id: 1021, name: 'Supercenter', city: 'Corpus Christi', lat: 27.80, lng: -97.40, tnt: 88.7, director: 'L. Davis', regional: 'A. Garcia' },
+        { id: 1022, name: 'Supercenter', city: 'McAllen', lat: 26.20, lng: -98.23, tnt: 71.5, director: 'L. Davis', regional: 'B. Smith' },
+        { id: 1023, name: 'Neighborhood Market', city: 'Brownsville', lat: 25.90, lng: -97.50, tnt: 79.8, director: 'L. Davis', regional: 'B. Smith' },
+        { id: 1024, name: 'Supercenter', city: 'Laredo', lat: 27.51, lng: -99.51, tnt: 92.1, director: 'L. Davis', regional: 'A. Garcia' },
+        { id: 1025, name: 'Supercenter', city: 'El Paso', lat: 31.76, lng: -106.49, tnt: 94.6, director: 'R. Williams', regional: 'E. Anderson' },
+        { id: 1026, name: 'Supercenter', city: 'El Paso East', lat: 31.78, lng: -106.32, tnt: 86.3, director: 'R. Williams', regional: 'F. Taylor' },
+        { id: 1027, name: 'Supercenter', city: 'Lubbock', lat: 33.58, lng: -101.85, tnt: 97.2, director: 'M. Johnson', regional: 'E. Anderson' },
+        { id: 1028, name: 'Neighborhood Market', city: 'Amarillo', lat: 35.22, lng: -101.83, tnt: 83.5, director: 'M. Johnson', regional: 'F. Taylor' },
+        { id: 1029, name: 'Supercenter', city: 'Midland', lat: 31.99, lng: -102.08, tnt: 69.8, director: 'R. Williams', regional: 'E. Anderson' },
+        { id: 1030, name: 'Supercenter', city: 'Odessa', lat: 31.85, lng: -102.37, tnt: 91.4, director: 'R. Williams', regional: 'F. Taylor' },
+        { id: 1031, name: 'Supercenter', city: 'Waco', lat: 31.55, lng: -97.15, tnt: 95.9, director: 'M. Johnson', regional: 'F. Taylor' },
+        { id: 1032, name: 'Neighborhood Market', city: 'Temple', lat: 31.10, lng: -97.34, tnt: 88.2, director: 'M. Johnson', regional: 'E. Anderson' },
+        { id: 1033, name: 'Supercenter', city: 'Killeen', lat: 31.12, lng: -97.73, tnt: 76.4, director: 'M. Johnson', regional: 'F. Taylor' },
+        { id: 1034, name: 'Supercenter', city: 'Tyler', lat: 32.35, lng: -95.30, tnt: 93.8, director: 'J. Martinez', regional: 'B. Smith' },
+        { id: 1035, name: 'Supercenter', city: 'Longview', lat: 32.50, lng: -94.74, tnt: 90.1, director: 'J. Martinez', regional: 'A. Garcia' },
+        { id: 1036, name: 'Neighborhood Market', city: 'Beaumont', lat: 30.08, lng: -94.13, tnt: 84.7, director: 'J. Martinez', regional: 'B. Smith' },
+        { id: 1037, name: 'Supercenter', city: 'Abilene', lat: 32.45, lng: -99.73, tnt: 96.5, director: 'R. Williams', regional: 'E. Anderson' },
+        { id: 1038, name: 'Supercenter', city: 'San Angelo', lat: 31.46, lng: -100.44, tnt: 89.3, director: 'R. Williams', regional: 'F. Taylor' },
+        { id: 1039, name: 'Neighborhood Market', city: 'Wichita Falls', lat: 33.91, lng: -98.49, tnt: 77.6, director: 'K. Thompson', regional: 'D. Wilson' },
+        { id: 1040, name: 'Supercenter', city: 'College Station', lat: 30.63, lng: -96.33, tnt: 94.2, director: 'M. Johnson', regional: 'F. Taylor' },
     ];
 
-    // Initialize map
-    const map = L.map('map').setView([31.0, -99.5], 6);
-    
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-        maxZoom: 18
-    }).addTo(map);
+    // RTU/AHU Units with issues
+    const RTU_UNITS = [
+        { storeId: 1003, unit: 'RTU-1', type: 'RTU', issue: 'comm', days: 5, director: 'J. Martinez', regional: 'B. Smith' },
+        { storeId: 1003, unit: 'RTU-3', type: 'RTU', issue: 'alarm', days: 2, director: 'J. Martinez', regional: 'B. Smith' },
+        { storeId: 1008, unit: 'AHU-2', type: 'AHU', issue: 'comm', days: 12, director: 'K. Thompson', regional: 'D. Wilson' },
+        { storeId: 1012, unit: 'RTU-4', type: 'RTU', issue: 'alarm', days: 1, director: 'R. Williams', regional: 'E. Anderson' },
+        { storeId: 1012, unit: 'RTU-5', type: 'RTU', issue: 'comm', days: 8, director: 'R. Williams', regional: 'E. Anderson' },
+        { storeId: 1018, unit: 'AHU-1', type: 'AHU', issue: 'alarm', days: 3, director: 'K. Thompson', regional: 'C. Brown' },
+        { storeId: 1018, unit: 'RTU-2', type: 'RTU', issue: 'comm', days: 7, director: 'K. Thompson', regional: 'C. Brown' },
+        { storeId: 1022, unit: 'RTU-1', type: 'RTU', issue: 'comm', days: 15, director: 'L. Davis', regional: 'B. Smith' },
+        { storeId: 1022, unit: 'RTU-2', type: 'RTU', issue: 'alarm', days: 4, director: 'L. Davis', regional: 'B. Smith' },
+        { storeId: 1022, unit: 'AHU-1', type: 'AHU', issue: 'comm', days: 10, director: 'L. Davis', regional: 'B. Smith' },
+        { storeId: 1023, unit: 'RTU-3', type: 'RTU', issue: 'alarm', days: 2, director: 'L. Davis', regional: 'B. Smith' },
+        { storeId: 1029, unit: 'RTU-1', type: 'RTU', issue: 'comm', days: 20, director: 'R. Williams', regional: 'E. Anderson' },
+        { storeId: 1029, unit: 'RTU-2', type: 'RTU', issue: 'comm', days: 18, director: 'R. Williams', regional: 'E. Anderson' },
+        { storeId: 1029, unit: 'AHU-1', type: 'AHU', issue: 'alarm', days: 6, director: 'R. Williams', regional: 'E. Anderson' },
+        { storeId: 1033, unit: 'RTU-4', type: 'RTU', issue: 'alarm', days: 1, director: 'M. Johnson', regional: 'F. Taylor' },
+        { storeId: 1039, unit: 'AHU-2', type: 'AHU', issue: 'comm', days: 9, director: 'K. Thompson', regional: 'D. Wilson' },
+        { storeId: 1016, unit: 'RTU-1', type: 'RTU', issue: 'alarm', days: 3, director: 'M. Johnson', regional: 'E. Anderson' },
+        { storeId: 1028, unit: 'RTU-2', type: 'RTU', issue: 'comm', days: 11, director: 'M. Johnson', regional: 'F. Taylor' },
+    ];
 
-    // Stats counters
-    let excellent = 0, good = 0, warning = 0, critical = 0;
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // MAP INSTANCES
+    // ═══════════════════════════════════════════════════════════════════════════════
+    let heatmapMap = null;
+    let rtuMap = null;
 
-    // Add markers for each store
-    STORES.forEach(store => {
-        // Determine color based on TnT
-        let color, status;
-        if (store.tnt >= 95) {
-            color = '#10b981'; status = 'Excellent'; excellent++;
-        } else if (store.tnt >= 85) {
-            color = '#f59e0b'; status = 'Good'; good++;
-        } else if (store.tnt >= 75) {
-            color = '#f97316'; status = 'Warning'; warning++;
-        } else {
-            color = '#ef4444'; status = 'Critical'; critical++;
-        }
-
-        // Create marker
-        const marker = L.circleMarker([store.lat, store.lng], {
-            radius: 14,
-            fillColor: color,
-            color: '#ffffff',
-            weight: 3,
-            opacity: 1,
-            fillOpacity: 0.9
-        }).addTo(map);
-
-        // Add popup
-        marker.bindPopup(`
-            <div style="font-family: system-ui; min-width: 200px;">
-                <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">Store #${store.id}</div>
-                <div style="color: #666; margin-bottom: 8px;">${store.name}<br>${store.city}, TX</div>
-                <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 24px; font-weight: bold; color: ${color};">${store.tnt.toFixed(1)}%</div>
-                    <div style="font-size: 12px; color: #666;">TnT Score</div>
-                    <div style="margin-top: 4px; font-size: 11px; font-weight: 600; color: ${color};">${status}</div>
-                </div>
-            </div>
-        `);
-
-        // Add tooltip on hover
-        marker.bindTooltip(`Store #${store.id}: ${store.tnt.toFixed(1)}%`, {
-            permanent: false,
-            direction: 'top'
-        });
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+        populateFilters();
+        initHeatMap();
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
     });
 
-    // Update stats
-    document.getElementById('statExcellent').textContent = excellent;
-    document.getElementById('statGood').textContent = good;
-    document.getElementById('statWarning').textContent = warning;
-    document.getElementById('statCritical').textContent = critical;
-    document.getElementById('storeCount').textContent = `${STORES.length} stores loaded`;
+    function populateFilters() {
+        // Heat map filters
+        const dirSelect = document.getElementById('filterDirector');
+        const regSelect = document.getElementById('filterRegional');
+        DIRECTORS.forEach(d => dirSelect.innerHTML += `<option value="${d}">${d}</option>`);
+        REGIONALS.forEach(r => regSelect.innerHTML += `<option value="${r}">${r}</option>`);
 
-    console.log('✅ Heat map loaded with', STORES.length, 'stores');
+        // RTU filters
+        const rtuDirSelect = document.getElementById('rtuFilterDirector');
+        const rtuRegSelect = document.getElementById('rtuFilterRegional');
+        DIRECTORS.forEach(d => rtuDirSelect.innerHTML += `<option value="${d}">${d}</option>`);
+        REGIONALS.forEach(r => rtuRegSelect.innerHTML += `<option value="${r}">${r}</option>`);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // TAB SWITCHING
+    // ═══════════════════════════════════════════════════════════════════════════════
+    function switchTab(tab) {
+        document.getElementById('heatmap-content').classList.toggle('hidden', tab !== 'heatmap');
+        document.getElementById('rtu-content').classList.toggle('hidden', tab !== 'rtu');
+        document.getElementById('tab-heatmap').classList.toggle('active', tab === 'heatmap');
+        document.getElementById('tab-rtu').classList.toggle('active', tab === 'rtu');
+
+        if (tab === 'heatmap') {
+            setTimeout(() => { if (heatmapMap) heatmapMap.invalidateSize(); renderHeatMap(); }, 100);
+        } else {
+            setTimeout(() => { initRtuMap(); }, 100);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // HEAT MAP
+    // ═══════════════════════════════════════════════════════════════════════════════
+    function initHeatMap() {
+        if (heatmapMap) return;
+        heatmapMap = L.map('heatmapMap').setView([31.0, -99.5], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap', maxZoom: 18
+        }).addTo(heatmapMap);
+        renderHeatMap();
+    }
+
+    function renderHeatMap() {
+        if (!heatmapMap) return;
+        
+        // Clear existing markers
+        heatmapMap.eachLayer(layer => { if (layer instanceof L.CircleMarker) heatmapMap.removeLayer(layer); });
+
+        // Get filter values
+        const dirFilter = document.getElementById('filterDirector').value;
+        const regFilter = document.getElementById('filterRegional').value;
+
+        // Filter stores
+        let filtered = STORES.filter(s => {
+            if (dirFilter && s.director !== dirFilter) return false;
+            if (regFilter && s.regional !== regFilter) return false;
+            return true;
+        });
+
+        // Stats
+        let excellent = 0, good = 0, warning = 0, critical = 0;
+
+        // Add markers
+        filtered.forEach(store => {
+            let color, status;
+            if (store.tnt >= 95) { color = '#10b981'; status = 'Excellent'; excellent++; }
+            else if (store.tnt >= 85) { color = '#f59e0b'; status = 'Good'; good++; }
+            else if (store.tnt >= 75) { color = '#f97316'; status = 'Warning'; warning++; }
+            else { color = '#ef4444'; status = 'Critical'; critical++; }
+
+            L.circleMarker([store.lat, store.lng], {
+                radius: 12, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9
+            }).bindPopup(`
+                <div style="font-family:system-ui;min-width:200px">
+                    <div style="font-weight:bold;font-size:14px">Store #${store.id}</div>
+                    <div style="color:#666;font-size:12px;margin:4px 0">${store.name} - ${store.city}, TX</div>
+                    <div style="background:#f3f4f6;padding:10px;border-radius:8px;text-align:center;margin:8px 0">
+                        <div style="font-size:22px;font-weight:bold;color:${color}">${store.tnt.toFixed(1)}%</div>
+                        <div style="font-size:11px;color:#666">TnT Score - ${status}</div>
+                    </div>
+                    <div style="font-size:11px;color:#666;border-top:1px solid #eee;padding-top:8px">
+                        <div><strong>Director:</strong> ${store.director}</div>
+                        <div><strong>Regional:</strong> ${store.regional}</div>
+                    </div>
+                </div>
+            `).bindTooltip(`#${store.id}: ${store.tnt.toFixed(1)}%`).addTo(heatmapMap);
+        });
+
+        // Update stats
+        document.getElementById('statExcellent').textContent = excellent;
+        document.getElementById('statGood').textContent = good;
+        document.getElementById('statWarning').textContent = warning;
+        document.getElementById('statCritical').textContent = critical;
+        document.getElementById('storeCount').textContent = filtered.length;
+
+        // Fit bounds
+        if (filtered.length > 0) {
+            const bounds = filtered.map(s => [s.lat, s.lng]);
+            heatmapMap.fitBounds(bounds, { padding: [30, 30] });
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById('filterDirector').value = '';
+        document.getElementById('filterRegional').value = '';
+        renderHeatMap();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // RTU/AHU BROKEN MAP
+    // ═══════════════════════════════════════════════════════════════════════════════
+    function initRtuMap() {
+        if (!rtuMap) {
+            rtuMap = L.map('rtuMap').setView([31.0, -99.5], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap', maxZoom: 18
+            }).addTo(rtuMap);
+        }
+        renderRtuMap();
+    }
+
+    function renderRtuMap() {
+        if (!rtuMap) return;
+        
+        // Clear existing markers
+        rtuMap.eachLayer(layer => { if (layer instanceof L.CircleMarker) rtuMap.removeLayer(layer); });
+
+        // Get filter values
+        const dirFilter = document.getElementById('rtuFilterDirector').value;
+        const regFilter = document.getElementById('rtuFilterRegional').value;
+        const issueFilter = document.getElementById('rtuFilterIssue').value;
+
+        // Filter units
+        let filtered = RTU_UNITS.filter(u => {
+            if (dirFilter && u.director !== dirFilter) return false;
+            if (regFilter && u.regional !== regFilter) return false;
+            if (issueFilter === 'comm' && u.issue !== 'comm') return false;
+            if (issueFilter === 'alarm' && u.issue !== 'alarm') return false;
+            return true;
+        });
+
+        // Stats
+        let commLoss = filtered.filter(u => u.issue === 'comm').length;
+        let alarms = filtered.filter(u => u.issue === 'alarm').length;
+
+        // Group by store
+        const storeIssues = {};
+        filtered.forEach(u => {
+            if (!storeIssues[u.storeId]) storeIssues[u.storeId] = { comm: 0, alarm: 0, units: [] };
+            if (u.issue === 'comm') storeIssues[u.storeId].comm++;
+            else storeIssues[u.storeId].alarm++;
+            storeIssues[u.storeId].units.push(u);
+        });
+
+        // Add markers for stores with issues
+        Object.keys(storeIssues).forEach(storeId => {
+            const store = STORES.find(s => s.id == storeId);
+            if (!store) return;
+            const issues = storeIssues[storeId];
+            
+            let color = '#fbbf24'; // multiple
+            if (issues.comm > 0 && issues.alarm === 0) color = '#ef4444'; // comm only
+            else if (issues.alarm > 0 && issues.comm === 0) color = '#f97316'; // alarm only
+
+            L.circleMarker([store.lat, store.lng], {
+                radius: 14, fillColor: color, color: '#fff', weight: 3, fillOpacity: 0.9
+            }).bindPopup(`
+                <div style="font-family:system-ui;min-width:220px">
+                    <div style="font-weight:bold;font-size:14px">Store #${store.id}</div>
+                    <div style="color:#666;font-size:12px;margin:4px 0">${store.city}, TX</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0">
+                        <div style="background:#fee2e2;padding:8px;border-radius:6px;text-align:center">
+                            <div style="font-weight:bold;color:#dc2626">${issues.comm}</div>
+                            <div style="font-size:10px;color:#666">Comm Loss</div>
+                        </div>
+                        <div style="background:#ffedd5;padding:8px;border-radius:6px;text-align:center">
+                            <div style="font-weight:bold;color:#ea580c">${issues.alarm}</div>
+                            <div style="font-size:10px;color:#666">Alarms</div>
+                        </div>
+                    </div>
+                    <div style="font-size:11px;color:#666;border-top:1px solid #eee;padding-top:6px">
+                        <strong>Director:</strong> ${store.director}
+                    </div>
+                </div>
+            `).addTo(rtuMap);
+        });
+
+        // Update stats
+        document.getElementById('rtuCommLoss').textContent = commLoss;
+        document.getElementById('rtuAlarms').textContent = alarms;
+        document.getElementById('rtuOffline').textContent = commLoss + alarms;
+        document.getElementById('rtuOnline').textContent = (STORES.length * 3) - (commLoss + alarms);
+        document.getElementById('rtuIssueCount').textContent = filtered.length;
+
+        // Update table
+        document.getElementById('rtuTableBody').innerHTML = filtered.sort((a,b) => b.days - a.days).map(u => {
+            const store = STORES.find(s => s.id === u.storeId);
+            return `
+                <tr class="border-b border-gray-100 hover:bg-red-50 transition">
+                    <td class="px-4 py-3 font-semibold">#${u.storeId} <span class="text-gray-400 font-normal text-xs">${store?.city || ''}</span></td>
+                    <td class="px-4 py-3">${u.unit}</td>
+                    <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs font-medium ${u.type === 'RTU' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}">${u.type}</span></td>
+                    <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs font-medium ${u.issue === 'comm' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}">${u.issue === 'comm' ? '📵 Comm Loss' : '⚠️ Alarm'}</span></td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${u.director}</td>
+                    <td class="px-4 py-3"><span class="font-bold ${u.days > 7 ? 'text-red-600' : 'text-amber-600'}">${u.days}d</span></td>
+                </tr>
+            `;
+        }).join('') || '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">No issues found</td></tr>';
+
+        // Fit bounds
+        const storeIds = Object.keys(storeIssues).map(Number);
+        const bounds = STORES.filter(s => storeIds.includes(s.id)).map(s => [s.lat, s.lng]);
+        if (bounds.length > 0) rtuMap.fitBounds(bounds, { padding: [30, 30] });
+    }
+
+    function resetRtuFilters() {
+        document.getElementById('rtuFilterDirector').value = '';
+        document.getElementById('rtuFilterRegional').value = '';
+        document.getElementById('rtuFilterIssue').value = 'all';
+        renderRtuMap();
+    }
     </script>
 </body>
 </html>
