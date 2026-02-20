@@ -267,15 +267,24 @@ def background_refresh():
 # API ENDPOINTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+@app.get("/full", response_class=HTMLResponse)
+async def full_dashboard(request: Request):
+    """Serve the FULL dblish-style dashboard with all features."""
+    html_path = TEMPLATES_DIR / "dblish_full.html"
+    if html_path.exists():
+        content = html_path.read_text(encoding="utf-8")
+        # Update generated timestamp
+        from datetime import datetime
+        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        content = content.replace("2026-02-19 16:26", now)
+        return HTMLResponse(content=content)
+    return HTMLResponse("<h1>Dashboard not found</h1>", status_code=404)
+
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    """Main dashboard page."""
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "region": REGION,
-        "sr_director": SR_DIRECTOR,
-        "fm_director": FM_DIRECTOR
-    })
+async def home(request: Request):
+    """Redirect to full dashboard."""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/full", status_code=302)
 
 # Mount data directory for JSON files
 DATA_DIR = BASE_DIR / "data"
