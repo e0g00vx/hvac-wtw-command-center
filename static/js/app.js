@@ -83,6 +83,11 @@ async function loadData() {
       initSuperDashboard(data);
     }
     
+    // Initialize Hierarchy tab
+    if (typeof initHierarchyTab === 'function') {
+      initHierarchyTab(data);
+    }
+    
     console.log('✅ Data loaded:', S.stores.length, 'stores,', S.wtwStatus.length, 'WTW stores');
   } catch (e) {
     console.error('Failed to load data:', e);

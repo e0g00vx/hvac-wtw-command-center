@@ -216,6 +216,11 @@ def load_fallback_data():
     _cache["wo_categories"] = WO_CATEGORIES
     _cache["milestones"] = MILESTONES
     
+    # Org hierarchy data
+    from org_hierarchy import ORG_HIERARCHY, get_hierarchy_summary
+    _cache["org_hierarchy"] = ORG_HIERARCHY
+    _cache["hierarchy_summary"] = get_hierarchy_summary()
+    
     log.info(f"Loaded embedded data: {len(STORES)} stores, {len(AHU_RTU_WOS)} WOs, {len(WTW_STATUS)} WTW stores, {len(DIRECTORS)} directors")
 
 def refresh_data():
@@ -292,6 +297,8 @@ async def get_all_data():
         "wo_categories": _cache.get("wo_categories", {}),
         "milestones": _cache.get("milestones", []),
         "store_managers": _cache.get("store_managers", {}),
+        "org_hierarchy": _cache.get("org_hierarchy", {}),
+        "hierarchy_summary": _cache.get("hierarchy_summary", []),
         "last_refresh": _cache["last_refresh"],
         "refresh_count": _cache["refresh_count"],
         "config": {

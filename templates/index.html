@@ -258,6 +258,9 @@
         <button class="tab-btn" data-tab="trends" onclick="switchTab('trends',this)">
           📈 Trends<span class="badge bg-gradient-to-r from-green-500 to-emerald-500 text-white">NEW</span>
         </button>
+        <button class="tab-btn" data-tab="team" onclick="switchTab('team',this); renderHierarchyTab();">
+          🏢 Team<span class="badge bg-gradient-to-r from-orange-500 to-red-500 text-white">ORG</span>
+        </button>
       </div>
       <div class="flex items-center gap-3">
         <select class="filter-select" id="filterManager" onchange="applyFilters()">
@@ -748,6 +751,16 @@
     </div>
   </div>
   
+  <!-- 🏢 TEAM/HIERARCHY Tab -->
+  <div id="tab-team" class="hidden">
+    <div class="card p-6" id="hierarchyContent">
+      <div class="text-center py-8 text-gray-500">
+        <div class="text-4xl mb-4">🏢</div>
+        <p>Loading organization hierarchy...</p>
+      </div>
+    </div>
+  </div>
+  
 </main>
 
 <!-- Footer -->
@@ -788,6 +801,7 @@
 
 <script src="/static/js/app.js"></script>
 <script src="/static/js/super.js"></script>
+<script src="/static/js/hierarchy.js"></script>
 
 </body>
 </html>
