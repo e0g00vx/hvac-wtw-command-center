@@ -9647,21 +9647,25 @@ function updateHeroStats() {
 
 // Render Store Health Map with REAL DATA
 function renderStoreHealthMap() {
+    console.log('renderStoreHealthMap called');
     if (storeMapInstance) { storeMapInstance.remove(); storeMapInstance = null; }
     const mapEl = document.getElementById('storeHealthMap');
-    if (!mapEl) return;
+    if (!mapEl) { console.error('Map element not found'); return; }
     
     storeMapInstance = L.map('storeHealthMap').setView([31.5, -99.5], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(storeMapInstance);
     
     let excellent = 0, good = 0, warning = 0, critical = 0;
     const stores = window.STORES || [];
+    console.log('Stores loaded:', stores.length);
     
     if (stores.length === 0) {
-        document.getElementById('healthExcellent').textContent = '0';
-        document.getElementById('healthGood').textContent = '0';
-        document.getElementById('healthWarning').textContent = '0';
-        document.getElementById('healthCritical').textContent = '0';
+        console.warn('No stores data available yet - will retry in 2s');
+        document.getElementById('healthExcellent').textContent = 'Loading...';
+        document.getElementById('healthGood').textContent = '';
+        document.getElementById('healthWarning').textContent = '';
+        document.getElementById('healthCritical').textContent = '';
+        setTimeout(renderStoreHealthMap, 2000); // Retry after 2 seconds
         return;
     }
     
@@ -9709,15 +9713,24 @@ function renderStoreHealthMap() {
 
 // Render AHU/RTU Map with REAL DATA from TERM_UNITS
 function renderAhuMap() {
+    console.log('renderAhuMap called');
     if (ahuMapInstance) { ahuMapInstance.remove(); ahuMapInstance = null; }
     const mapEl = document.getElementById('ahuRtuMap');
-    if (!mapEl) return;
+    if (!mapEl) { console.error('AHU Map element not found'); return; }
     
     ahuMapInstance = L.map('ahuRtuMap').setView([31.5, -99.5], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(ahuMapInstance);
     
     const stores = window.STORES || [];
     const termUnits = window.TERM_UNITS || {};
+    console.log('Stores:', stores.length, 'TermUnits keys:', Object.keys(termUnits).length);
+    
+    if (stores.length === 0) {
+        console.warn('No stores data - retrying in 2s');
+        setTimeout(renderAhuMap, 2000);
+        return;
+    }
+    
     const filter = document.getElementById('unitFilter')?.value || 'all';
     
     let totalUnits = 0, online = 0, offline = 0;
