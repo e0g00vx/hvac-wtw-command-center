@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Region 15B — HVAC Win-the-Winter Command Center</title>
+    <title>Region 15B â€” HVAC Win-the-Winter Command Center</title>
     <meta http-equiv="refresh" content="300"> <!-- Auto-refresh every 5 minutes -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
@@ -150,11 +150,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 </script>
 
 <script>
-// ══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Shared Utilities
-// ══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// HTML escaper — prevents XSS in innerHTML templates
+// HTML escaper â€” prevents XSS in innerHTML templates
 function esc(s) {
     if (s == null) return '';
     var d = document.createElement('div');
@@ -162,19 +162,19 @@ function esc(s) {
     return d.innerHTML;
 }
 
-// ══════════════════════════════════════════════════════════════
-// Fiscal Year Utilities (Walmart: Feb 1 → Jan 31)
-// FY26 = Feb 1 2025 → Jan 31 2026
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Fiscal Year Utilities (Walmart: Feb 1 â†’ Jan 31)
+// FY26 = Feb 1 2025 â†’ Jan 31 2026
 //
 // TEMPLATE RULES:
-//   1. activeFy defaults to null (All Time) — never filter on load
+//   1. activeFy defaults to null (All Time) â€” never filter on load
 //   2. All getters (getWosFy, getLeaksFy) pass through raw data when activeFy=null
 //   3. Every function guards against missing/empty data arrays
 //   4. initFyPicker() MUST only be called from initDashboard() AFTER data loads
 //   5. WTW_DATA is NOT filtered by FY (it's inherently single-FY)
-// ══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ── Date → FY conversion ──
+// â”€â”€ Date â†’ FY conversion â”€â”€
 function dateToFy(dateStr) {
     if (!dateStr || typeof dateStr !== 'string') return null;
     var parts = dateStr.split('-');
@@ -203,7 +203,7 @@ function isInFy(dateStr, fyNum) {
     return dateToFy(dateStr) === fyNum;
 }
 
-// ── Global FY State ──
+// â”€â”€ Global FY State â”€â”€
 var activeFy = null;      // null = all time (SAFE default)
 var availableFys = [];    // populated by initFyPicker
 
@@ -269,7 +269,7 @@ function refreshCurrentTab() {
     if (currentTab === 'projects' && typeof renderProjectsTab === 'function') renderProjectsTab();
 }
 
-// ── FY-filtered data getters ──
+// â”€â”€ FY-filtered data getters â”€â”€
 // Rule: when activeFy is null, return the FULL raw array (no filtering)
 function getWosFy() {
     if (!activeFy) return WOS;
@@ -281,7 +281,7 @@ function getLeaksFy() {
     return LEAKS.filter(function(l) { return isInFy(l.cd, activeFy); });
 }
 
-// NOTE: WTW_DATA is NOT filtered by FY — it's inherently single-FY program data.
+// NOTE: WTW_DATA is NOT filtered by FY â€” it's inherently single-FY program data.
 // This getter exists for YoY summary building only.
 function getWtwFy() {
     if (!activeFy) return WTW_DATA;
@@ -290,7 +290,7 @@ function getWtwFy() {
     });
 }
 
-// ── FY Summary Stats (for YoY comparison) ──
+// â”€â”€ FY Summary Stats (for YoY comparison) â”€â”€
 function buildFySummary() {
     var summary = {};
     if (!availableFys.length) return summary;
@@ -320,7 +320,7 @@ function buildFySummary() {
     return summary;
 }
 
-// ── Monthly breakdown for a FY ──
+// â”€â”€ Monthly breakdown for a FY â”€â”€
 function buildFyMonthly(fy) {
     var months = new Array(12).fill(null).map(function(_, i) {
         return { idx: i, label: FY_MONTH_NAMES[i], wos: 0, wosDone: 0, leaks: 0, leaksDone: 0, nte: 0 };
@@ -343,12 +343,12 @@ function buildFyMonthly(fy) {
     return months;
 }
 
-// ══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Composite Ranking Algorithm
 // Combines: TnT Ref, HVAC, Dewpoint, Rack, PM Score, Loss, WTW
 // Each metric is normalized to 0-100, then weighted.
 // Higher composite = better performance.
-// ══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function compositeScore(row) {
     var W = (typeof GOALS !== 'undefined' && GOALS.composite_rank) || {
         tnt_weight: 0.25, hvac_weight: 0.15, dewpoint_weight: 0.15,
@@ -406,10 +406,10 @@ function compositeGrade(v) {
 </script>
 
 <script>
-// ══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Dashboard Export Utilities
 // Supports: CSV (tables), PNG (charts), text (insights)
-// ══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 function _exportTimestamp() {
     var d = new Date();
@@ -441,7 +441,7 @@ function _downloadCanvas(filename, canvas) {
     document.body.removeChild(a);
 }
 
-// ── CSV Export from HTML table ──
+// â”€â”€ CSV Export from HTML table â”€â”€
 function exportTableCSV(tableEl, filename) {
     if (!tableEl) return;
     var rows = [];
@@ -468,10 +468,10 @@ function exportTableCSV(tableEl, filename) {
     if (rows.length === 0) { _exportToast('No data to export'); return; }
     var fn = (filename || 'export') + '_' + _exportTimestamp() + '.csv';
     _downloadFile(fn, '\uFEFF' + rows.join('\n'), 'text/csv;charset=utf-8');
-    _exportToast('Exported ' + (rows.length - 1) + ' rows → ' + fn);
+    _exportToast('Exported ' + (rows.length - 1) + ' rows â†’ ' + fn);
 }
 
-// ── CSV Export from data array ──
+// â”€â”€ CSV Export from data array â”€â”€
 function exportDataCSV(data, columns, filename) {
     if (!data || !data.length) { _exportToast('No data to export'); return; }
     var rows = [];
@@ -489,19 +489,19 @@ function exportDataCSV(data, columns, filename) {
     });
     var fn = (filename || 'export') + '_' + _exportTimestamp() + '.csv';
     _downloadFile(fn, '\uFEFF' + rows.join('\n'), 'text/csv;charset=utf-8');
-    _exportToast('Exported ' + data.length + ' rows → ' + fn);
+    _exportToast('Exported ' + data.length + ' rows â†’ ' + fn);
 }
 
-// ── Chart PNG Export ──
+// â”€â”€ Chart PNG Export â”€â”€
 function exportChartPNG(chartId, filename) {
     var canvas = document.getElementById(chartId);
     if (!canvas) { _exportToast('Chart not found'); return; }
     var fn = (filename || chartId) + '_' + _exportTimestamp() + '.png';
     _downloadCanvas(fn, canvas);
-    _exportToast('Chart saved → ' + fn);
+    _exportToast('Chart saved â†’ ' + fn);
 }
 
-// ── Export any section (auto-detect content) ──
+// â”€â”€ Export any section (auto-detect content) â”€â”€
 function exportSection(sectionEl, filename) {
     if (!sectionEl) return;
     // Check for table first
@@ -521,11 +521,11 @@ function exportSection(sectionEl, filename) {
     if (text) {
         var fn = (filename || 'export') + '_' + _exportTimestamp() + '.txt';
         _downloadFile(fn, text, 'text/plain;charset=utf-8');
-        _exportToast('Text saved → ' + fn);
+        _exportToast('Text saved â†’ ' + fn);
     }
 }
 
-// ── Toast notification ──
+// â”€â”€ Toast notification â”€â”€
 function _exportToast(msg) {
     var existing = document.getElementById('exportToast');
     if (existing) existing.remove();
@@ -538,14 +538,14 @@ function _exportToast(msg) {
     setTimeout(function() { toast.remove(); }, 3000);
 }
 
-// ── Export button factory ──
+// â”€â”€ Export button factory â”€â”€
 function makeExportBtn(onclick, title) {
     return '<button onclick="' + onclick + '" title="' + (title || 'Export') +
         '" class="px-2 py-1 text-xs font-medium text-gray-500 hover:text-[#0053e2] hover:bg-blue-50 rounded transition border border-transparent hover:border-blue-200" aria-label="' +
         (title || 'Export') + '">&#x1F4E5;</button>';
 }
 
-// ── Export all tables & charts in the current tab ──
+// â”€â”€ Export all tables & charts in the current tab â”€â”€
 function exportAllCurrentTab() {
     var tabEl = document.getElementById(currentTab + '-content');
     if (!tabEl) { _exportToast('No active tab found'); return; }
@@ -587,7 +587,7 @@ function exportAllCurrentTab() {
         _exportToast('Exported ' + exported + ' item' + (exported !== 1 ? 's' : '') + ' from ' + tabName.toUpperCase() + ' tab');
     }
 }
-// ── Auto-inject bottom export buttons into every box ──
+// â”€â”€ Auto-inject bottom export buttons into every box â”€â”€
 function _injectBottomExportButtons() {
     document.querySelectorAll('.bg-white.rounded-lg, .bg-white.rounded-xl').forEach(function(box) {
         // Find the header export button in this box
@@ -619,14 +619,31 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Header -->
-<header class="bg-walmart-blue text-white shadow-lg">
+<header class="bg-gradient-to-r from-[#001f5c] via-[#0053e2] to-[#3b82f6] text-white shadow-lg">
     <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-                <h1 class="text-xl sm:text-2xl font-bold">&#x2744; HVAC Win-the-Winter <span id="headerFyLabel">FY26</span></h1>
-                <p class="text-blue-100 text-xs sm:text-sm">Time in Target Dashboard | HVAC/R Performance | <span id="fyActiveLabel" class="font-semibold text-white"></span></p>
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">&#x2744;</span>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold">Region 15B — HVAC Win-the-Winter Command Center</h1>
+                        <p class="text-blue-200 text-xs sm:text-sm mt-1">
+                            <span class="bg-[#ffc220] text-[#001f5c] px-2 py-0.5 rounded font-bold mr-2">LIVE</span>
+                            FM Director: <strong>Franky Gonzalez</strong> | Sr. Director: <strong>B.A. Glass</strong> | <span id="headerFyLabel">FY26</span>
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center gap-4 w-full sm:w-auto">
+            <div class="flex items-center gap-6 w-full sm:w-auto">
+                <!-- Quick Stats -->
+                <div class="text-center hidden md:block">
+                    <p class="text-2xl font-bold" id="heroStores">187</p>
+                    <p class="text-xs text-blue-200">Stores</p>
+                </div>
+                <div class="text-center hidden md:block">
+                    <p class="text-2xl font-bold text-[#ffc220]" id="heroTnT">92.1%</p>
+                    <p class="text-xs text-blue-200">Avg TnT</p>
+                </div>
                 <!-- Fiscal Year Picker -->
                 <div class="text-center">
                     <label for="fyPicker" class="text-xs text-blue-200 block mb-1">Fiscal Year</label>
@@ -637,7 +654,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </select>
                 </div>
                 <div class="text-right">
-                    <p class="text-xs sm:text-sm text-blue-100">Data Refreshed</p>
+                    <p class="text-xs sm:text-sm text-blue-100">Auto-Refresh: 5 min</p>
                     <p class="font-semibold text-xs sm:text-sm" id="lastUpdated">2026-02-19 16:26</p>
                     <p class="text-xs text-blue-200 mt-0.5 hidden sm:block">Loaded <span id="pageLoadedAt"></span></p>
                 </div>
@@ -881,8 +898,8 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- YoY Section (toggled) -->
     <div id="yoyExecWrap" class="hidden">
         <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Fiscal Year-over-Year Comparison (Feb–Jan)</h3>
-            <p class="text-xs text-gray-500 mb-4">All metrics aligned to Walmart fiscal year (Feb 1 – Jan 31)</p>
+            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Fiscal Year-over-Year Comparison (Febâ€“Jan)</h3>
+            <p class="text-xs text-gray-500 mb-4">All metrics aligned to Walmart fiscal year (Feb 1 â€“ Jan 31)</p>
 
             <!-- FY Summary Table -->
             <div id="fyCompTable" class="mb-6"></div>
@@ -1161,7 +1178,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div id="mgrStorePanel" class="hidden mb-6">
         <div class="bg-white rounded-lg shadow-lg border-2 border-[#0053e2] overflow-hidden">
             <div class="bg-[#0053e2] text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="text-base font-bold">&#x1F3EA; Stores &amp; Managers — <span id="mgrStorePanelTitle"></span></h3>
+                <h3 class="text-base font-bold">&#x1F3EA; Stores &amp; Managers â€” <span id="mgrStorePanelTitle"></span></h3>
                 <div class="flex items-center gap-3">
                     <button onclick="exportTableCSV(document.getElementById('mgrStoreBody').closest('table'),'tnt_stores_detail')" title="Export CSV" class="text-white/80 hover:text-white text-xs px-2 py-1 bg-white/20 hover:bg-white/30 rounded transition">&#x1F4E5; Export</button>
                     <span id="mgrStoreCount" class="text-sm bg-white/20 rounded-full px-3 py-1"></span>
@@ -1223,10 +1240,10 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="bg-white rounded-lg shadow overflow-hidden mb-6" id="refTermRankingSection">
         <div class="px-4 py-3 border-b border-red-200 bg-gradient-to-r from-red-50 to-orange-50">
             <div class="flex flex-wrap justify-between items-center gap-3">
-                <h2 class="text-lg font-semibold text-red-800">&#x1F3C6; Terminal Cases — Leadership Ranking</h2>
+                <h2 class="text-lg font-semibold text-red-800">&#x1F3C6; Terminal Cases â€” Leadership Ranking</h2>
                 <button onclick="resetRefTermRanking()" class="px-3 py-1 text-xs font-semibold rounded-md border border-gray-300 bg-white text-gray-600 hover:bg-gray-50">Reset All</button>
             </div>
-            <p class="text-xs text-gray-500 mt-1">Click a name to filter — cascades like a slicer across all levels and the store table below</p>
+            <p class="text-xs text-gray-500 mt-1">Click a name to filter â€” cascades like a slicer across all levels and the store table below</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-0 divide-x divide-gray-200">
             <!-- Sr Director -->
@@ -1289,7 +1306,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div id="refTermDetail" class="hidden mb-6">
         <div class="bg-white rounded-lg shadow-lg border-2 border-red-400 overflow-hidden">
             <div class="bg-red-600 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="text-lg font-bold">&#x2744;&#xFE0F; Store <span id="refTermDetailStore"></span> — Terminal Cases</h3>
+                <h3 class="text-lg font-bold">&#x2744;&#xFE0F; Store <span id="refTermDetailStore"></span> â€” Terminal Cases</h3>
                 <button onclick="document.getElementById('refTermDetail').classList.add('hidden')" class="text-white hover:text-gray-200 text-xl">&times;</button>
             </div>
             <div class="p-4">
@@ -1319,14 +1336,14 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- YoY Section (toggled) -->
     <div id="yoyTntWrap" class="hidden">
         <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Year-over-Year — Monthly WO Volume</h3>
+            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Year-over-Year â€” Monthly WO Volume</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <h4 class="text-sm font-semibold text-gray-600 mb-2">WTW Work Orders by Month (FY overlay)</h4>
                     <div style="height:280px"><canvas id="yoyTntHvac"></canvas></div>
                 </div>
                 <div>
-                    <h4 class="text-sm font-semibold text-gray-600 mb-2">WTW WOs — All Categories (FY overlay)</h4>
+                    <h4 class="text-sm font-semibold text-gray-600 mb-2">WTW WOs â€” All Categories (FY overlay)</h4>
                     <div style="height:280px"><canvas id="yoyTntRef"></canvas></div>
                 </div>
             </div>
@@ -1509,7 +1526,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input id="wtwStoreSearch" type="text" placeholder="Search store..." oninput="wtwRenderStoreSummary()" class="border border-gray-200 rounded-md px-2 py-1 text-xs w-24" />
                 </div>
                 <span id="wtwStoreSumCount" class="text-[11px] text-gray-500 font-semibold"></span>
-                <span class="text-[11px] text-gray-400">Click headers to sort • Click row to slice</span>
+                <span class="text-[11px] text-gray-400">Click headers to sort â€¢ Click row to slice</span>
                 <span id="wtwSlicerBadge" class="hidden ml-auto px-3 py-1 bg-[#0053e2] text-white text-xs font-bold rounded-full cursor-pointer shadow hover:bg-[#004299] transition" onclick="wtwToggleStoreSlicer(null)"></span>
             </div>
             <div style="max-height:500px;overflow-y:auto">
@@ -1521,7 +1538,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <th class="px-2 py-2.5 text-center" onclick="wtwSortStoreSummary('phase')">Phase <span class="sort-icon"></span></th>
                             <th class="px-2 py-2.5 text-center" onclick="wtwSortStoreSummary('hours')">Hours <span class="sort-icon"></span></th>
                             <th class="px-2 py-2.5 text-center" onclick="wtwSortStoreSummary('recent_pm')">Recent PM <span class="sort-icon"></span></th>
-                            <th class="px-2 py-2.5 text-center" onclick="wtwSortStoreSummary('improvement')" title="PM score change vs 30 days ago">30d Δ <span class="sort-icon"></span></th>
+                            <th class="px-2 py-2.5 text-center" onclick="wtwSortStoreSummary('improvement')" title="PM score change vs 30 days ago">30d Î” <span class="sort-icon"></span></th>
                             <th class="px-2 py-2.5 text-center" onclick="wtwSortStoreSummary('store_rate')" title="Store-level leak rate">Store Leak Rate <span class="sort-icon"></span></th>
                             <th class="px-2 py-2.5 text-center" onclick="wtwSortStoreSummary('asset_lr')" title="Average asset leak rate">Avg Asset LR <span class="sort-icon"></span></th>
                         </tr>
@@ -1559,7 +1576,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- YoY Section (toggled, not a sub-tab) -->
     <div id="yoyWtwWrap" class="hidden">
         <div class="bg-white rounded-lg shadow p-5 mb-5">
-            <h3 class="text-lg font-semibold text-[#004c91] pb-3 mb-4 border-b-2 border-gray-200">&#x1F4C5; Win the Winter — Year-over-Year Comparison</h3>
+            <h3 class="text-lg font-semibold text-[#004c91] pb-3 mb-4 border-b-2 border-gray-200">&#x1F4C5; Win the Winter â€” Year-over-Year Comparison</h3>
             <div style="height:320px"><canvas id="yoyWtwBar"></canvas></div>
         </div>
         <div class="bg-white rounded-lg shadow p-5 mb-5">
@@ -1582,7 +1599,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- READY Sub-tab -->
     <div id="wtwReady" class="hidden">
         <div class="bg-white rounded-lg shadow p-5 mb-5">
-            <div class="flex justify-between items-center"><h3 class="text-lg font-semibold text-[#004c91] pb-3 mb-4 border-b-2 border-gray-200">&#x2705; Ready to Complete — Stores with PM Score &ge; 90%</h3><button onclick="exportTableCSV(document.getElementById('wtwReadyBody')?.closest('table'),'wtw_ready_to_complete')" title="Export CSV" class="px-2 py-1 text-xs font-medium text-gray-500 hover:text-[#0053e2] hover:bg-blue-50 rounded transition border border-transparent hover:border-blue-200">&#x1F4E5;</button></div>
+            <div class="flex justify-between items-center"><h3 class="text-lg font-semibold text-[#004c91] pb-3 mb-4 border-b-2 border-gray-200">&#x2705; Ready to Complete â€” Stores with PM Score &ge; 90%</h3><button onclick="exportTableCSV(document.getElementById('wtwReadyBody')?.closest('table'),'wtw_ready_to_complete')" title="Export CSV" class="px-2 py-1 text-xs font-medium text-gray-500 hover:text-[#0053e2] hover:bg-blue-50 rounded transition border border-transparent hover:border-blue-200">&#x1F4E5;</button></div>
             <p class="text-sm text-gray-500 mb-4">These in-progress work orders have achieved the target PM Score threshold and may be ready for completion.</p>
             <div class="bg-[#76c043] text-white p-5 rounded-lg mb-5 flex justify-around items-center">
                 <div class="text-center">
@@ -1775,7 +1792,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
             <div>
                 <div class="flex justify-between items-center"><h2 class="text-lg font-semibold text-gray-800">&#x1F4CA; Leak Summary Report <span class="text-xs font-normal text-gray-400">(Tableau)</span></h2><button onclick="exportTableCSV(document.getElementById('lsTableBody')?.closest('table'),'leak_summary')" title="Export CSV" class="px-2 py-1 text-xs font-medium text-gray-500 hover:text-[#0053e2] hover:bg-blue-50 rounded transition border border-transparent hover:border-blue-200">&#x1F4E5;</button></div>
-                <p class="text-xs text-gray-500">Asset-level leak rates from Tableau Refrigerant Leak Report — cross-referenced with ServiceChannel</p>
+                <p class="text-xs text-gray-500">Asset-level leak rates from Tableau Refrigerant Leak Report â€” cross-referenced with ServiceChannel</p>
             </div>
             <div class="flex gap-2 items-center">
                 <select id="lsColorFilter" onchange="renderLeakSummary()" class="text-sm border rounded px-2 py-1">
@@ -1878,7 +1895,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div class="bg-white rounded-lg shadow p-4">
             <div class="flex justify-between items-center mb-2">
-                <h3 class="text-sm font-semibold text-gray-700">&#x1F4B0; NTE Spend by Quarter — Year over Year</h3>
+                <h3 class="text-sm font-semibold text-gray-700">&#x1F4B0; NTE Spend by Quarter â€” Year over Year</h3>
                 <div class="flex gap-1 items-center" id="nteYearToggles"></div>
             </div>
             <div style="height:260px"><canvas id="leakNteChart"></canvas></div>
@@ -1894,7 +1911,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div class="bg-white rounded-lg shadow p-4">
             <h3 class="text-sm font-semibold text-gray-700 mb-2">&#x2697;&#xFE0F; Emissions by Refrigerant Type</h3>
-            <p class="text-xs text-gray-400 mb-2">MTCO2e contribution by refrigerant — higher GWP = greater impact per lb leaked</p>
+            <p class="text-xs text-gray-400 mb-2">MTCO2e contribution by refrigerant â€” higher GWP = greater impact per lb leaked</p>
             <div style="height:300px"><canvas id="refEmissionsChart"></canvas></div>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
@@ -1924,7 +1941,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
             <div>
                 <h2 class="text-lg font-semibold text-gray-800">&#x26A0;&#xFE0F; Assets Over 400 lbs Added Since 1/1/2026</h2>
-                <p class="text-xs text-gray-500">Assets with 400+ lbs of refrigerant added since January 1, 2026 — filters with hierarchy dropdowns</p>
+                <p class="text-xs text-gray-500">Assets with 400+ lbs of refrigerant added since January 1, 2026 â€” filters with hierarchy dropdowns</p>
             </div>
             <div class="flex gap-2 items-center">
                 <input type="text" id="hcSearch" placeholder="Store #, tag, FSM..." oninput="renderHCTable()"
@@ -1982,7 +1999,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- YoY Section (toggled) -->
     <div id="yoyLeakWrap" class="hidden">
         <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Year-over-Year — Leak Work Orders</h3>
+            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Year-over-Year â€” Leak Work Orders</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <h4 class="text-sm font-semibold text-gray-600 mb-2">Monthly Leak WOs (FY overlay)</h4>
@@ -2320,7 +2337,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
         <div class="px-4 py-3 border-b border-gray-200">
             <h2 class="text-lg font-semibold text-gray-800">&#x1F4CB; Terminal HVAC Detail</h2>
-            <p class="text-xs text-gray-500">All reason × duration combinations from Tableau</p>
+            <p class="text-xs text-gray-500">All reason Ã— duration combinations from Tableau</p>
         </div>
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50"><tr>
@@ -2364,17 +2381,17 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- YoY Section (toggled) -->
     <div id="yoyHvacWrap" class="hidden">
         <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Year-over-Year — Avg HVAC Time in Target</h3>
+            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Year-over-Year â€” Avg HVAC Time in Target</h3>
             <div style="height:300px"><canvas id="yoyHvacTnt"></canvas></div>
             <p class="text-xs text-gray-400 mt-2">Monthly average HVAC time in target (%) across all stores. FY comparison limited to last 3 years.</p>
         </div>
         <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Year-over-Year — Avg Dewpoint</h3>
+            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Year-over-Year â€” Avg Dewpoint</h3>
             <div style="height:300px"><canvas id="yoyHvacDp"></canvas></div>
-            <p class="text-xs text-gray-400 mt-2">Monthly average AHU dewpoint (°F) across all stores. Lower is generally better in winter months.</p>
+            <p class="text-xs text-gray-400 mt-2">Monthly average AHU dewpoint (Â°F) across all stores. Lower is generally better in winter months.</p>
         </div>
         <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Year-over-Year — Avg Alerts per Store</h3>
+            <h3 class="text-base font-bold text-walmart-dark mb-4">&#x1F4C5; Year-over-Year â€” Avg Alerts per Store</h3>
             <div style="height:300px"><canvas id="yoyHvacAlerts"></canvas></div>
             <p class="text-xs text-gray-400 mt-2">Monthly average high-dewpoint alerts per store. Trending down indicates improving performance.</p>
         </div>
@@ -2848,7 +2865,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </main>
 </div>
 
-<!-- ═══════════ Active Projects Tab ═══════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â• Active Projects Tab â•â•â•â•â•â•â•â•â•â•â• -->
 <div id="projects-content" class="hidden">
     <div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
@@ -3096,7 +3113,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- ═══ Centralized KPIs Overview ═══ -->
+    <!-- â•â•â• Centralized KPIs Overview â•â•â• -->
     <div id="kpiSubContent-overview">
         <!-- Summary KPI cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="kpiOverviewCards"></div>
@@ -3131,11 +3148,11 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- ═══ Safety Ranked ═══ -->
+    <!-- â•â•â• Safety Ranked â•â•â• -->
     <div id="kpiSubContent-safety" class="hidden">
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
-                <h3 class="text-base font-semibold text-gray-800">&#x1F6E1;&#xFE0F; Safety Ranked — TRIR by Leadership</h3>
+                <h3 class="text-base font-semibold text-gray-800">&#x1F6E1;&#xFE0F; Safety Ranked â€” TRIR by Leadership</h3>
                 <select id="kpiSafetyGroupBy" onchange="onKpiSubGroupByChange('safety')" class="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full sm:w-auto">
                     <option value="sr">By Sr. Director</option>
                     <option value="dir">By Director</option>
@@ -3157,11 +3174,11 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- ═══ Service Ranked ═══ -->
+    <!-- â•â•â• Service Ranked â•â•â• -->
     <div id="kpiSubContent-service" class="hidden">
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
-                <h3 class="text-base font-semibold text-gray-800">&#x1F91D; Service Ranked — NPS by Leadership</h3>
+                <h3 class="text-base font-semibold text-gray-800">&#x1F91D; Service Ranked â€” NPS by Leadership</h3>
                 <select id="kpiServiceGroupBy" onchange="onKpiSubGroupByChange('service')" class="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full sm:w-auto">
                     <option value="sr">By Sr. Director</option>
                     <option value="dir">By Director</option>
@@ -3182,11 +3199,11 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- ═══ Productivity Ranked ═══ -->
+    <!-- â•â•â• Productivity Ranked â•â•â• -->
     <div id="kpiSubContent-productivity" class="hidden">
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
-                <h3 class="text-base font-semibold text-gray-800">&#x26A1; Productivity Ranked — Time-in-Target by Leadership</h3>
+                <h3 class="text-base font-semibold text-gray-800">&#x26A1; Productivity Ranked â€” Time-in-Target by Leadership</h3>
                 <select id="kpiProdGroupBy" onchange="onKpiSubGroupByChange('productivity')" class="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full sm:w-auto">
                     <option value="sr">By Sr. Director</option>
                     <option value="dir">By Director</option>
@@ -3207,10 +3224,10 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- ═══ Finance Ranked ═══ -->
+    <!-- â•â•â• Finance Ranked â•â•â• -->
     <div id="kpiSubContent-finance" class="hidden">
         <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 class="text-base font-semibold text-gray-800 mb-4">&#x1F4B0; Finance Ranked — Construction Project Spend</h3>
+            <h3 class="text-base font-semibold text-gray-800 mb-4">&#x1F4B0; Finance Ranked â€” Construction Project Spend</h3>
             <div style="height:350px"><canvas id="kpiFinanceBarChart"></canvas></div>
         </div>
         <div class="bg-white rounded-lg shadow p-6 mb-6">
@@ -3248,7 +3265,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- placeholder - store detail is handled inline in tnt_tab -->
 
 <script>
-// ── Shared Name Search Utility (used across all tabs) ──
+// â”€â”€ Shared Name Search Utility (used across all tabs) â”€â”€
 // Config per tab: { prefix, orgIds: [{key, filterId, label}], applyFn, clearFn }
 var _nameSearchConfigs = {};
 
@@ -3367,7 +3384,7 @@ document.addEventListener('click', function(e) {
 </script>
 
 <script>
-// ── Executive Filters ──
+// â”€â”€ Executive Filters â”€â”€
 function populateExecFilter(id, values) {
     var sel = document.getElementById(id);
     var cur = sel.value;
@@ -3443,7 +3460,7 @@ function getExecGroupLevel() {
     return { key: 'sr', label: 'Sr. Director' };
 }
 
-// ── Executive Render (uses exec filters) ──
+// â”€â”€ Executive Render (uses exec filters) â”€â”€
 function renderExec() {
     var retail = getExecFiltered();
     var storeSns = new Set(retail.map(function(s) { return s.sn; }));
@@ -3509,7 +3526,7 @@ function renderExec() {
 }
 </script>
 <script>
-// ── Executive sub-renderers (split for file size) ──
+// â”€â”€ Executive sub-renderers (split for file size) â”€â”€
 function renderExecFindings(retail, allWos, avgTnT, avgT30, avg90, avgHvac, avgDp, passPct, dpPct, woPct, totalLoss) {
     var tw = avgT30 > avg90 ? 'improving' : avgT30 < avg90 ? 'declining' : 'stable';
     var tc = tw === 'improving' ? 'text-green-700' : tw === 'declining' ? 'text-red-700' : '';
@@ -3739,7 +3756,7 @@ function renderExecRankTable(retail, allWos) {
     });
 
     document.getElementById('execRankBody').innerHTML = rows.map(function(r, i) {
-        var medal = r.nm === 'Unassigned' ? '—' : (i === 0 ? '&#x1F947;' : i === 1 ? '&#x1F948;' : i === 2 ? '&#x1F949;' : (i + 1));
+        var medal = r.nm === 'Unassigned' ? 'â€”' : (i === 0 ? '&#x1F947;' : i === 1 ? '&#x1F948;' : i === 2 ? '&#x1F949;' : (i + 1));
         var esc = r.nm.replace(/'/g, "\\'");
         // Unassigned label with region/submarket info
         var nameLabel = r.nm;
@@ -3788,7 +3805,7 @@ function renderExecRecommendations(retail, allWos, avgTnT, avgDp, passPct, woPct
 </script>
 
 <script>
-// ── Leak Summary Tab Logic ──
+// â”€â”€ Leak Summary Tab Logic â”€â”€
 let leakCharts = {};
 let leakInitialized = false;
 let hcSortKey = 'current_charge';
@@ -3843,7 +3860,7 @@ function getFilteredLeaks() {
 }
 
 function populateLeakFilters() {
-    // Year filter — locked to 2026 (current reporting year)
+    // Year filter â€” locked to 2026 (current reporting year)
     const yrSel = document.getElementById('lkYear');
     if (yrSel) {
         yrSel.innerHTML = '<option value="2026" selected>2026</option>';
@@ -3953,7 +3970,7 @@ function renderLeakKPIs(data) {
     if (document.getElementById('lkType')?.value) filterParts.push(document.getElementById('lkType').value);
     if (document.getElementById('lkYear')?.value) filterParts.push(document.getElementById('lkYear').value);
     document.getElementById('leakFilterLabel').textContent =
-        filterParts.length ? `Filtered: ${filterParts.join(' › ')} (${data.length.toLocaleString()} WOs)` :
+        filterParts.length ? `Filtered: ${filterParts.join(' â€º ')} (${data.length.toLocaleString()} WOs)` :
         `Showing all leak work orders (${data.length.toLocaleString()})`;
 }
 
@@ -4026,7 +4043,7 @@ function renderLeakHighChargeChart(data) {
         data: {
             labels: HC_BUCKETS.map(b => b.label),
             datasets: [{
-                label: 'Assets ≥400 lbs Added',
+                label: 'Assets â‰¥400 lbs Added',
                 data: vals,
                 backgroundColor: bgColors,
                 borderColor: borderColors,
@@ -4061,7 +4078,7 @@ function renderLeakHighChargeChart(data) {
             },
             scales: {
                 y: { beginAtZero: true, title: { display: true, text: 'Number of Assets' } },
-                x: { title: { display: true, text: 'Click a bar to filter ↓' } }
+                x: { title: { display: true, text: 'Click a bar to filter â†“' } }
             }
         }
     });
@@ -4426,7 +4443,7 @@ function renderLeakTab() {
     renderLeakSummary();
 }
 
-// ═══ Tableau Leak Summary (Asset-Level) ═══
+// â•â•â• Tableau Leak Summary (Asset-Level) â•â•â•
 function getFilteredLeakSummary() {
     if (typeof LEAK_SUMMARY === 'undefined' || !Array.isArray(LEAK_SUMMARY)) return [];
     let data = LEAK_SUMMARY;
@@ -4563,7 +4580,7 @@ function renderLsTable(data) {
 }
 </script>
 <script>
-// ── HVAC Tab Logic ──
+// â”€â”€ HVAC Tab Logic â”€â”€
 let hvacCharts = {};
 let hvacInitialized = false;
 let hvacSortKey = 'hvac';
@@ -4681,7 +4698,7 @@ function sortHvacTable(key) {
     renderHvacTable(getHvacFiltered());
 }
 
-// ── KPI Cards ──
+// â”€â”€ KPI Cards â”€â”€
 function renderHvacKPIs(data) {
     ensureHvacTempLookup();
     const hvacs = data.map(s => s.hvac).filter(v => v != null);
@@ -4700,16 +4717,16 @@ function renderHvacKPIs(data) {
     // Update header KPIs
     document.getElementById('hvacStoreCount').textContent = data.length;
     document.getElementById('hvacAvgTnt').textContent = avg(hvacs).toFixed(1) + '%';
-    document.getElementById('hvacAvgDp').textContent = avg(dps).toFixed(1) + '°F';
-    document.getElementById('hvacAvgZoneTemp').textContent = avgZoneTemp != null ? avgZoneTemp.toFixed(1) + '°F' : '--';
+    document.getElementById('hvacAvgDp').textContent = avg(dps).toFixed(1) + 'Â°F';
+    document.getElementById('hvacAvgZoneTemp').textContent = avgZoneTemp != null ? avgZoneTemp.toFixed(1) + 'Â°F' : '--';
 
     const tempColor = avgZoneTemp == null ? 'blue' : (avgZoneTemp >= 69 && avgZoneTemp <= 73) ? 'green' : (avgZoneTemp >= 60 && avgZoneTemp <= 78) ? 'yellow' : 'red';
     const cards = [
         { label: 'Avg HVAC TnT', value: avg(hvacs).toFixed(1) + '%', color: avg(hvacs) >= 90 ? 'green' : avg(hvacs) >= 80 ? 'yellow' : 'red' },
-        { label: 'Avg Zone Temp', value: avgZoneTemp != null ? avgZoneTemp.toFixed(1) + '°F' : '--', sub: storeTemps.length + ' stores', color: tempColor },
-        { label: 'Avg Dewpoint', value: avg(dps).toFixed(1) + '°F', color: avg(dps) <= 52 ? 'green' : 'red' },
-        { label: 'Avg AHU DP', value: avg(adps).toFixed(1) + '°F', color: avg(adps) <= 52 ? 'green' : 'red' },
-        { label: 'DP ≤52°F', value: dpPct + '%', sub: dpPass + '/' + dps.length, color: dpPct >= 80 ? 'green' : 'red' },
+        { label: 'Avg Zone Temp', value: avgZoneTemp != null ? avgZoneTemp.toFixed(1) + 'Â°F' : '--', sub: storeTemps.length + ' stores', color: tempColor },
+        { label: 'Avg Dewpoint', value: avg(dps).toFixed(1) + 'Â°F', color: avg(dps) <= 52 ? 'green' : 'red' },
+        { label: 'Avg AHU DP', value: avg(adps).toFixed(1) + 'Â°F', color: avg(adps) <= 52 ? 'green' : 'red' },
+        { label: 'DP â‰¤52Â°F', value: dpPct + '%', sub: dpPass + '/' + dps.length, color: dpPct >= 80 ? 'green' : 'red' },
         { label: 'HVAC WOs', value: hwoTotal.toLocaleString(), color: 'blue' },
         { label: '72hr Alerts', value: alerts.toLocaleString(), color: alerts > 0 ? 'red' : 'green' },
     ];
@@ -4724,7 +4741,7 @@ function renderHvacKPIs(data) {
     ).join('');
 }
 
-// ── Charts ──
+// â”€â”€ Charts â”€â”€
 function makeOrUpdate(id, cfg) {
     if (hvacCharts[id]) hvacCharts[id].destroy();
     hvacCharts[id] = new Chart(document.getElementById(id), cfg);
@@ -4732,7 +4749,7 @@ function makeOrUpdate(id, cfg) {
 
 function renderHvacTntDist(data) {
     const bucketDefs = [
-        { label: '≥95', min: 95, max: 999, color: '#2a8703' },
+        { label: 'â‰¥95', min: 95, max: 999, color: '#2a8703' },
         { label: '90-94', min: 90, max: 94.999, color: '#86bc25' },
         { label: '80-89', min: 80, max: 89.999, color: '#ffc220' },
         { label: '70-79', min: 70, max: 79.999, color: '#ff8200' },
@@ -4768,10 +4785,10 @@ function renderHvacTntDist(data) {
 
 function renderHvacDpDist(data) {
     const dps = data.filter(s => s.dp != null);
-    const buckets = { '≤45': 0, '46-48': 0, '49-50': 0, '51-52': 0, '53-55': 0, '>55': 0 };
+    const buckets = { 'â‰¤45': 0, '46-48': 0, '49-50': 0, '51-52': 0, '53-55': 0, '>55': 0 };
     dps.forEach(s => {
         const v = s.dp;
-        if (v <= 45) buckets['≤45']++;
+        if (v <= 45) buckets['â‰¤45']++;
         else if (v <= 48) buckets['46-48']++;
         else if (v <= 50) buckets['49-50']++;
         else if (v <= 52) buckets['51-52']++;
@@ -4816,7 +4833,7 @@ function renderHvacAlertChart(data) {
     const sorted = Object.entries(groups).sort((a, b) => b[1] - a[1]).slice(0, 10);
     if (sorted.length === 0) {
         const el = document.getElementById('hvacAlertChart');
-        if (el) el.parentElement.innerHTML = '<p class="text-center text-gray-400 py-16">No active 72hr alerts ✅</p>';
+        if (el) el.parentElement.innerHTML = '<p class="text-center text-gray-400 py-16">No active 72hr alerts âœ…</p>';
         return;
     }
     // Store data globally for click handler
@@ -4864,16 +4881,16 @@ function renderHvacScatter(data) {
         options: {
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false }, datalabels: { display: false },
-                tooltip: { callbacks: { label: ctx => `Store ${ctx.raw.sn}: DP=${ctx.raw.x}°F, AHU=${ctx.raw.y}°F` } } },
+                tooltip: { callbacks: { label: ctx => `Store ${ctx.raw.sn}: DP=${ctx.raw.x}Â°F, AHU=${ctx.raw.y}Â°F` } } },
             scales: {
-                x: { title: { display: true, text: 'Store Dewpoint (°F)' } },
-                y: { title: { display: true, text: 'AHU Dewpoint (°F)' } }
+                x: { title: { display: true, text: 'Store Dewpoint (Â°F)' } },
+                y: { title: { display: true, text: 'AHU Dewpoint (Â°F)' } }
             }
         }
     });
 }
 
-// ── Table ──
+// â”€â”€ Table â”€â”€
 function renderHvacTable(data) {
     ensureHvacTempLookup();
     // Augment data with avg zone temp for sorting
@@ -4909,15 +4926,15 @@ function renderHvacTable(data) {
 
     tbody.innerHTML = show.map(s => {
         var zt = s.avgzt;
-        var ztDisplay = zt != null ? zt.toFixed(1) + '°F' : '-';
+        var ztDisplay = zt != null ? zt.toFixed(1) + 'Â°F' : '-';
         return `<tr class="table-row hover:bg-cyan-50 cursor-pointer" onclick="toggleHvacDetail('${s.sn}', this)">
             <td class="px-3 py-2 font-semibold">${s.sn}</td>
             <td class="px-3 py-2 text-xs">${(s.nm || '').slice(0, 25)}</td>
             <td class="px-3 py-2 text-xs">${s.city || ''}, ${s.state || ''}</td>
             <td class="px-3 py-2 text-xs">${(s.rm || '-').split(',')[0]}</td>
             <td class="px-3 py-2 text-center"><span class="px-2 py-0.5 rounded text-xs ${tntColor(s.hvac)}">${s.hvac != null ? s.hvac.toFixed(1) + '%' : '-'}</span></td>
-            <td class="px-3 py-2 text-center"><span class="px-2 py-0.5 rounded text-xs ${dpColor(s.dp)}">${s.dp != null ? s.dp + '°F' : '-'}</span></td>
-            <td class="px-3 py-2 text-center"><span class="px-2 py-0.5 rounded text-xs ${dpColor(s.adp)}">${s.adp != null ? s.adp.toFixed(1) + '°F' : '-'}</span></td>
+            <td class="px-3 py-2 text-center"><span class="px-2 py-0.5 rounded text-xs ${dpColor(s.dp)}">${s.dp != null ? s.dp + 'Â°F' : '-'}</span></td>
+            <td class="px-3 py-2 text-center"><span class="px-2 py-0.5 rounded text-xs ${dpColor(s.adp)}">${s.adp != null ? s.adp.toFixed(1) + 'Â°F' : '-'}</span></td>
             <td class="px-3 py-2 text-center"><span class="px-2 py-0.5 rounded text-xs ${tempColor(zt)}">${ztDisplay}</span></td>
             <td class="px-3 py-2 text-center">${s.hwo || 0}</td>
             <td class="px-3 py-2 text-center">${s.rwo || 0}</td>
@@ -4927,10 +4944,10 @@ function renderHvacTable(data) {
     }).join('');
 
     document.getElementById('hvacTableShowing').textContent =
-        `Showing ${show.length} of ${data.length} stores (sorted by ${hvacSortKey} ${hvacSortAsc ? '↑' : '↓'})`;
+        `Showing ${show.length} of ${data.length} stores (sorted by ${hvacSortKey} ${hvacSortAsc ? 'â†‘' : 'â†“'})`;
 }
 
-// ── Store Detail Expand ──
+// â”€â”€ Store Detail Expand â”€â”€
 function toggleHvacDetail(sn, rowEl) {
     const existing = document.getElementById('hvac-detail-' + sn);
     if (existing) { existing.remove(); return; }
@@ -4944,7 +4961,7 @@ function toggleHvacDetail(sn, rowEl) {
 
     // ---- Terminal HVAC Units (Mod Labels) ----
     html += '<div class="text-sm font-semibold text-gray-800 mb-2">';
-    html += '\u{1F3F7}\uFE0F Store #' + sn + ' — Terminal HVAC Mod Labels';
+    html += '\u{1F3F7}\uFE0F Store #' + sn + ' â€” Terminal HVAC Mod Labels';
     html += '</div>';
 
     if (termUnits.length === 0) {
@@ -5035,7 +5052,7 @@ function toggleHvacDetail(sn, rowEl) {
 
 // Terminal HVAC + detail table logic moved to hvac_units_js.html
 
-// ── Main Render ──
+// â”€â”€ Main Render â”€â”€
 function renderHvacTab() {
     if (!hvacInitialized) {
         initHvacFilters();
@@ -5047,7 +5064,7 @@ function renderHvacTab() {
     document.getElementById('hvacStoreCount').textContent = data.length.toLocaleString();
     document.getElementById('hvacAvgTnt').textContent = avg(data.map(s => s.hvac)).toFixed(1) + '%';
     const dps = data.filter(s => s.dp != null).map(s => s.dp);
-    document.getElementById('hvacAvgDp').textContent = dps.length ? avg(dps).toFixed(1) + '°F' : '--';
+    document.getElementById('hvacAvgDp').textContent = dps.length ? avg(dps).toFixed(1) + 'Â°F' : '--';
 
     renderHvacKPIs(data);
     renderHvacTntDist(data);
@@ -5066,7 +5083,7 @@ function renderHvacTab() {
 </script>
 
 <script>
-// ── 72hr Alert Region click-to-drill ──
+// â”€â”€ 72hr Alert Region click-to-drill â”€â”€
 var hvacAlertSlice = null;
 var hvacAlertSortKey = 'ha72';
 var hvacAlertSortAsc = false;
@@ -5151,7 +5168,7 @@ function renderHvacAlertStores() {
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ── Distribution click-to-drill ──
+// â”€â”€ Distribution click-to-drill â”€â”€
 function hvacDistClick(bucketIdx, type) {
     hvacDistSlice = { type: type, bucketIdx: bucketIdx };
     hvacDistSortKey = type === 'tnt' ? 'hvac' : 'dp';
@@ -5229,7 +5246,7 @@ function renderHvacDistStores() {
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ── Store HVAC Unit Detail Panel ──
+// â”€â”€ Store HVAC Unit Detail Panel â”€â”€
 var _hvacUnitStore = null;
 var _hvacUnitSortKey = 'un';
 var _hvacUnitSortAsc = true;
@@ -5358,7 +5375,7 @@ function renderHvacStoreUnits() {
     document.getElementById('hvacUnitCount').textContent = units.length + ' units shown';
 }
 
-// ── Terminal HVAC Charts (filtered by top-level store set) ──
+// â”€â”€ Terminal HVAC Charts (filtered by top-level store set) â”€â”€
 function renderTerminalHvac(filteredStoreSet) {
     if (!TERM_DETAIL || !TERM_DETAIL.length) return;
 
@@ -5490,7 +5507,7 @@ function renderTermDetailTable() {
 </script>
 
 <script>
-// ── NPS Tab Logic ──
+// â”€â”€ NPS Tab Logic â”€â”€
 let npsCharts = {};
 let npsInitialized = false;
 let npsTableSortKey = 'market_nps';
@@ -5504,14 +5521,14 @@ let npsDistDrillSortAsc = true;
 let npsFilteredOps = []; // filtered NPS_OPS data
 let npsSrFilter = null; // active Sr Director name (uppercase) or null
 
-// Lazy lookups — built on first renderNpsTab when STORES is loaded
+// Lazy lookups â€” built on first renderNpsTab when STORES is loaded
 var NPS_MKT_OPS = null;
 var NPS_MKT_SR = null;
-var NPS_MKT_BANNERS = null; // market → Set of banner strings
-var NPS_MKT_SR_NAME = null;  // market → sr director name
-var NPS_MKT_DIR = null;      // market → fm director name
-var NPS_MKT_RM = null;       // market → regional manager name
-var NPS_MKT_FSM = null;      // market → fs manager name
+var NPS_MKT_BANNERS = null; // market â†’ Set of banner strings
+var NPS_MKT_SR_NAME = null;  // market â†’ sr director name
+var NPS_MKT_DIR = null;      // market â†’ fm director name
+var NPS_MKT_RM = null;       // market â†’ regional manager name
+var NPS_MKT_FSM = null;      // market â†’ fs manager name
 
 function ensureNpsLookups() {
     if (NPS_MKT_OPS !== null) return;
@@ -5559,10 +5576,10 @@ function npsFormat(v) {
     return v != null ? Math.round(v) : '--';
 }
 
-// ── Filter Logic ──
+// â”€â”€ Filter Logic â”€â”€
 function populateNpsFilters() {
     var filtered = npsFilteredOps;
-    // Org hierarchy filters based on market → store lookups
+    // Org hierarchy filters based on market â†’ store lookups
     var srVals = [...new Set(filtered.map(d => NPS_MKT_SR_NAME[d.market]).filter(Boolean))].sort();
     var dirVals = [...new Set(filtered.map(d => NPS_MKT_DIR[d.market]).filter(Boolean))].sort();
     var rmVals = [...new Set(filtered.map(d => NPS_MKT_RM[d.market]).filter(Boolean))].sort();
@@ -5614,7 +5631,7 @@ function getFilteredNpsOps() {
             mktBanners.forEach(function(b) { if (banners.has(b)) hasMatch = true; });
             if (!hasMatch) return false;
         }
-        // Org hierarchy filters via market → store lookups
+        // Org hierarchy filters via market â†’ store lookups
         if (srVal && NPS_MKT_SR_NAME[d.market] !== srVal) return false;
         if (dirVal && NPS_MKT_DIR[d.market] !== dirVal) return false;
         if (rmVal && NPS_MKT_RM[d.market] !== rmVal) return false;
@@ -5688,7 +5705,7 @@ registerNameSearch('nps', {
     applyFn: 'applyNpsFilters'
 });
 
-// ── Header KPIs ──
+// â”€â”€ Header KPIs â”€â”€
 function renderNpsMissingMarkets() {
     var alert = document.getElementById('npsMissingMarketsAlert');
     if (!alert) return;
@@ -5775,7 +5792,7 @@ function renderNpsHeader() {
     document.getElementById('npsAvgParticipation').textContent = avgPart + '%';
 }
 
-// ── Sr Director Cards ──
+// â”€â”€ Sr Director Cards â”€â”€
 function toggleNpsSrFilter(name) {
     npsSrFilter = (npsSrFilter === name) ? null : name;
     applyNpsFilters();
@@ -5806,7 +5823,7 @@ function renderNpsSrCards() {
     }).join('');
 }
 
-// ── Regional Chart ──
+// â”€â”€ Regional Chart â”€â”€
 function renderNpsRegionalChart() {
     // Group filtered ops by regional
     var byRegional = {};
@@ -5854,7 +5871,7 @@ function renderNpsRegionalChart() {
     npsChartUpdate('npsRegionalChart', cfg);
 }
 
-// ── Region Bucket Chart ──
+// â”€â”€ Region Bucket Chart â”€â”€
 function renderNpsRegionBucketChart() {
     // Compute region-level NPS from filtered ops (weighted by volume)
     var byRegion = {};
@@ -5902,7 +5919,7 @@ function renderNpsRegionBucketChart() {
     npsChartUpdate('npsRegionBucketChart', cfg);
 }
 
-// ── NPS Distribution Chart ──
+// â”€â”€ NPS Distribution Chart â”€â”€
 function renderNpsDistChart() {
     var bucketDefs = [
         { label: '\u226590', min: 90, max: 999 },
@@ -5939,7 +5956,7 @@ function renderNpsDistChart() {
                 if (pts.length) {
                     var b = bucketDefs[pts[0].index];
                     npsDistDrillSlice = {
-                        type: 'nps', label: 'NPS ' + b.label + ' — Markets',
+                        type: 'nps', label: 'NPS ' + b.label + ' â€” Markets',
                         filterFn: function(d) { return d.market_nps != null && d.market_nps >= b.min && d.market_nps <= b.max; }
                     };
                     npsDistDrillSortKey = 'market_nps'; npsDistDrillSortAsc = true;
@@ -5951,7 +5968,7 @@ function renderNpsDistChart() {
     npsChartUpdate('npsDistChart', cfg);
 }
 
-// ── Participation Chart ──
+// â”€â”€ Participation Chart â”€â”€
 function renderNpsParticipationChart() {
     var bucketDefs = [
         { label: '\u226550%', min: 50, max: 999 },
@@ -5987,7 +6004,7 @@ function renderNpsParticipationChart() {
                 if (pts.length) {
                     var b = bucketDefs[pts[0].index];
                     npsDistDrillSlice = {
-                        type: 'part', label: 'Participation ' + b.label + ' — Markets',
+                        type: 'part', label: 'Participation ' + b.label + ' â€” Markets',
                         filterFn: function(d) { return d.response_rate != null && d.response_rate >= b.min && d.response_rate <= b.max; }
                     };
                     npsDistDrillSortKey = 'response_rate'; npsDistDrillSortAsc = true;
@@ -5999,7 +6016,7 @@ function renderNpsParticipationChart() {
     npsChartUpdate('npsParticipationChart', cfg);
 }
 
-// ── Chart helper ──
+// â”€â”€ Chart helper â”€â”€
 function npsChartUpdate(id, cfg) {
     if (npsCharts[id]) {
         npsCharts[id].destroy();
@@ -6007,7 +6024,7 @@ function npsChartUpdate(id, cfg) {
     npsCharts[id] = new Chart(document.getElementById(id), cfg);
 }
 
-// ── Market drill-down ──
+// â”€â”€ Market drill-down â”€â”€
 function clearNpsMarketSlice() {
     npsMarketSlice = null;
     document.getElementById('npsMarketPanel').classList.add('hidden');
@@ -6061,7 +6078,7 @@ function renderNpsMarketList() {
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ── Full table ──
+// â”€â”€ Full table â”€â”€
 function sortNpsTable(key) {
     if (npsTableSortKey === key) npsTableSortAsc = !npsTableSortAsc;
     else { npsTableSortKey = key; npsTableSortAsc = key === 'market' || key === 'manager' || key === 'regional'; }
@@ -6107,7 +6124,7 @@ function renderNpsTable() {
         'Showing ' + data.length + ' of ' + npsFilteredOps.length + ' markets';
 }
 
-// ── Insights ──
+// â”€â”€ Insights â”€â”€
 function renderNpsInsights() {
     var ops = npsFilteredOps;
     // Best/worst markets
@@ -6152,17 +6169,17 @@ function renderNpsInsights() {
     var overall = totalVol > 0 ? Math.round(totalWeighted / totalVol) : null;
     if (overall != null) {
         html += '<p><strong>\u{1F4CA} Executive Summary:</strong> Overall weighted NPS is <strong>' + overall + '</strong>. ';
-        if (overall >= 90) html += 'Excellent — stores report very high satisfaction with Facilities Services.';
-        else if (overall >= 80) html += 'Good — most stores are satisfied but there are improvement opportunities.';
-        else if (overall >= 70) html += 'Moderate — notable dissatisfaction in some areas requiring attention.';
-        else html += 'Needs improvement — consider root cause analysis on low-scoring regions.';
+        if (overall >= 90) html += 'Excellent â€” stores report very high satisfaction with Facilities Services.';
+        else if (overall >= 80) html += 'Good â€” most stores are satisfied but there are improvement opportunities.';
+        else if (overall >= 70) html += 'Moderate â€” notable dissatisfaction in some areas requiring attention.';
+        else html += 'Needs improvement â€” consider root cause analysis on low-scoring regions.';
         html += '</p>';
     }
 
     document.getElementById('npsInsights').innerHTML = html;
 }
 
-// ── Distribution Drill-down Panel ──
+// â”€â”€ Distribution Drill-down Panel â”€â”€
 function clearNpsDistDrill() {
     npsDistDrillSlice = null;
     var panel = document.getElementById('npsDistDrillPanel');
@@ -6221,7 +6238,7 @@ function renderNpsDistDrill() {
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ── Main entry ──
+// â”€â”€ Main entry â”€â”€
 function renderNpsTab() {
     if (typeof NPS_FS === 'undefined' || typeof NPS_OPS === 'undefined') return;
     ensureNpsLookups();
@@ -6240,11 +6257,11 @@ function renderNpsTab() {
 </script>
 
 <script>
-// ── Goals Tab Logic ──
+// â”€â”€ Goals Tab Logic â”€â”€
 var goalsCharts = {};
 var goalsInitialized = false;
 
-// Goals config — injected from report_config.json at build time
+// Goals config â€” injected from report_config.json at build time
 var GOALS_CONFIG = {"fy24": {"total_loss": 808, "markdown": 496}, "fy25": {"total_loss": 640, "markdown": 361}, "fy26": {"total_loss_ytd": 555, "total_loss_proj": 620, "markdown_ytd": 313, "markdown_proj": 350, "sup_per_store": 157}, "fy27": {"total_loss": 585, "markdown": 330, "sup_per_store": 149}, "health": {"rack_weight": 0.4, "tnt_weight": 0.3, "dp_weight": 0.3, "tnt_tolerance": 52, "tnt_buffer": 5, "target_score": 90.0}, "composite_rank": {"tnt_weight": 0.25, "hvac_weight": 0.15, "dewpoint_weight": 0.15, "rack_weight": 0.15, "pm_weight": 0.1, "loss_weight": 0.1, "wtw_weight": 0.1, "dewpoint_target": 52, "loss_normalization": 500000}};
 var GOALS = {
     fy24: GOALS_CONFIG.fy24,
@@ -6288,7 +6305,7 @@ function goalsColor(actual, target, lower) {
 }
 
 function goalsStatusBadge(actual, target, lower) {
-    if (actual == null) return '<span class="text-xs text-gray-400">—</span>';
+    if (actual == null) return '<span class="text-xs text-gray-400">â€”</span>';
     var on;
     if (lower) on = actual <= target;
     else on = actual >= target;
@@ -6300,7 +6317,7 @@ function goalsStatusBadge(actual, target, lower) {
     return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">\u274C Behind</span>';
 }
 
-// ── Filtering ──
+// â”€â”€ Filtering â”€â”€
 function getGoalsFilteredStores() {
     var ops = document.getElementById('gOps').value;
     var sr = document.getElementById('gSr').value;
@@ -6394,7 +6411,7 @@ registerNameSearch('g', {
     applyFn: 'applyGoalsFilters'
 });
 
-// ── Compute live FY26 metrics from STORES ──
+// â”€â”€ Compute live FY26 metrics from STORES â”€â”€
 function getGoalsLive() {
     var stores = getGoalsFilteredStores();
     var losses = [], tnts = [], hvacs = [], dps = [], racks = [];
@@ -6426,7 +6443,7 @@ function getGoalsLive() {
     };
 }
 
-// ── Header KPIs ──
+// â”€â”€ Header KPIs â”€â”€
 function renderGoalsHeader(live) {
     document.getElementById('goalsCurrLoss').textContent =
         live.totalLoss != null ? '$' + live.totalLoss.toFixed(0) + 'M' : '--';
@@ -6438,7 +6455,7 @@ function renderGoalsHeader(live) {
         live.avgHvac != null ? live.avgHvac.toFixed(1) + '%' : '--';
 }
 
-// ── Health Scoring Bars ──
+// â”€â”€ Health Scoring Bars â”€â”€
 function renderGoalsHealth(live) {
     // Rack Health
     var rackPct = live.avgRack != null ? live.avgRack.toFixed(1) : '--';
@@ -6471,7 +6488,7 @@ function renderGoalsHealth(live) {
     compEl.style.color = goalsColor(composite, GOALS.health.target_score, false);
 }
 
-// ── Product Loss Chart ──
+// â”€â”€ Product Loss Chart â”€â”€
 function renderGoalsLossChart(live) {
     var labels = ['FY24', 'FY25', 'FY26 YTD', 'FY26 Proj*', 'FY27 Goal'];
     var actuals = [GOALS.fy24.total_loss, GOALS.fy25.total_loss, live.totalLoss ? Math.round(live.totalLoss) : GOALS.fy26.total_loss_ytd, GOALS.fy26.total_loss_proj, null];
@@ -6497,7 +6514,7 @@ function renderGoalsLossChart(live) {
     });
 }
 
-// ── Markdown Chart ──
+// â”€â”€ Markdown Chart â”€â”€
 function renderGoalsMarkdownChart() {
     var labels = ['FY24', 'FY25', 'FY26 YTD', 'FY26 Proj*', 'FY27 Goal'];
     var actuals = [GOALS.fy24.markdown, GOALS.fy25.markdown, GOALS.fy26.markdown_ytd, GOALS.fy26.markdown_proj, null];
@@ -6523,7 +6540,7 @@ function renderGoalsMarkdownChart() {
     });
 }
 
-// ── SUP Chart ──
+// â”€â”€ SUP Chart â”€â”€
 function renderGoalsSupChart(live) {
     var fy24Sup = GOALS.fy24.total_loss * 1000 / 4600; // approx stores
     var fy25Sup = GOALS.fy25.total_loss * 1000 / 4600;
@@ -6549,7 +6566,7 @@ function renderGoalsSupChart(live) {
     });
 }
 
-// ── YoY Improvement Chart ──
+// â”€â”€ YoY Improvement Chart â”€â”€
 function renderGoalsYoyChart() {
     var G = GOALS;
     var fy24to25 = ((G.fy24.total_loss - G.fy25.total_loss) / G.fy24.total_loss * 100);
@@ -6576,7 +6593,7 @@ function renderGoalsYoyChart() {
     });
 }
 
-// ── Summary Table ──
+// â”€â”€ Summary Table â”€â”€
 function renderGoalsSummary(live) {
     var G = GOALS;
     var fy24SupK = Math.round(G.fy24.total_loss * 1000 / 4600);
@@ -6636,7 +6653,7 @@ function renderGoalsSummary(live) {
     }).join('');
 }
 
-// ── Health Score Distribution ──
+// â”€â”€ Health Score Distribution â”€â”€
 function renderGoalsHealthDist(live) {
     var buckets = { '\u226595': 0, '90-94': 0, '85-89': 0, '80-84': 0, '<80': 0 };
     getGoalsFilteredStores().forEach(function(s) {
@@ -6670,7 +6687,7 @@ function renderGoalsHealthDist(live) {
     });
 }
 
-// ── Insights ──
+// â”€â”€ Insights â”€â”€
 function renderGoalsInsights(live) {
     var G = GOALS;
     var html = '';
@@ -6730,7 +6747,7 @@ function renderGoalsInsights(live) {
     document.getElementById('goalsInsights').innerHTML = html;
 }
 
-// ── Main entry ──
+// â”€â”€ Main entry â”€â”€
 function renderGoalsTab() {
     if (!goalsInitialized) {
         cascadeGoalsFilters();
@@ -6750,7 +6767,7 @@ function renderGoalsTab() {
 </script>
 
 <script>
-// ═══════════ Active Projects Tab JS ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• Active Projects Tab JS â•â•â•â•â•â•â•â•â•â•â•
 var ACTIVE_PROJECTS = []; // loaded from data/active_projects.json
 var PROJECTS = ACTIVE_PROJECTS;
 var pjFiltered = PROJECTS;
@@ -6758,11 +6775,11 @@ var pjSort = { key: 'sn', asc: true };
 var pjPage = 0;
 var PJ_PAGE_SIZE = 50;
 
-// ── Helpers ──
+// â”€â”€ Helpers â”€â”€
 function _pjFmt$(v) {
-    if (v == null) return '—';
+    if (v == null) return 'â€”';
     var n = Number(v);
-    if (isNaN(n)) return '—';
+    if (isNaN(n)) return 'â€”';
     if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
     if (Math.abs(n) >= 1e3) return '$' + (n / 1e3).toFixed(0) + 'K';
     return '$' + n.toFixed(0);
@@ -6784,7 +6801,7 @@ function _pjBadge(s) {
     return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style="background:' + c.bg + ';color:' + c.text + '">' + s + '</span>';
 }
 
-// ── Populate filter dropdowns ──
+// â”€â”€ Populate filter dropdowns â”€â”€
 function _pjPopulate(id, values) {
     var sel = document.getElementById(id);
     if (!sel) return;
@@ -6815,7 +6832,7 @@ function _pjBuildBannerMap() {
     }
 }
 
-// Sync paired filter dropdowns (global ↔ inline table)
+// Sync paired filter dropdowns (global â†” inline table)
 var _pjLastChanged = {};
 function _pjSyncFilter(globalId, inlineId) {
     var g = document.getElementById(globalId);
@@ -6831,13 +6848,13 @@ function _pjSyncFilter(globalId, inlineId) {
     _pjLastChanged[globalId] = '';
 }
 
-// ── Filter ──
+// â”€â”€ Filter â”€â”€
 function applyProjectFilters() {
     _pjBuildBannerMap();
     // Only filter by banner when a specific banner is selected (not 'all')
     var bannerMode = typeof activeBanner !== 'undefined' ? activeBanner : 'all';
     var banners = (bannerMode !== 'all' && typeof getActiveBanners === 'function') ? getActiveBanners() : null;
-    // Sync inline table filters ↔ global filters (whichever changed last wins)
+    // Sync inline table filters â†” global filters (whichever changed last wins)
     _pjSyncFilter('pjStatus', 'pjTableStatus');
     _pjSyncFilter('pjType', 'pjTableType');
     var status = document.getElementById('pjStatus').value;
@@ -6921,7 +6938,7 @@ registerNameSearch('pj', {
     applyFn: 'applyProjectFilters'
 });
 
-// ── KPI Cards ──
+// â”€â”€ KPI Cards â”€â”€
 function renderProjectKpis() {
     var d = pjFiltered;
     var statusCounts = {};
@@ -6946,7 +6963,7 @@ function renderProjectKpis() {
     }).join('');
 }
 
-// ── Charts ──
+// â”€â”€ Charts â”€â”€
 function renderProjectCharts() {
     // Status donut
     var statusCounts = {};
@@ -6989,8 +7006,8 @@ function renderProjectCharts() {
     });
 
     // Duration distribution
-    var buckets = [{ l: '< 30d', max: 30 }, { l: '30–60d', max: 60 }, { l: '60–90d', max: 90 },
-        { l: '90–180d', max: 180 }, { l: '180–365d', max: 365 }, { l: '365d+', max: 999999 }];
+    var buckets = [{ l: '< 30d', max: 30 }, { l: '30â€“60d', max: 60 }, { l: '60â€“90d', max: 90 },
+        { l: '90â€“180d', max: 180 }, { l: '180â€“365d', max: 365 }, { l: '365d+', max: 999999 }];
     var durCounts = buckets.map(function() { return 0; });
     pjFiltered.forEach(function(p) {
         var d = p.dur;
@@ -7015,7 +7032,7 @@ function _pjChart(id, cfg) {
     _pjCharts[id] = new Chart(document.getElementById(id), cfg);
 }
 
-// ── Budget Cards ──
+// â”€â”€ Budget Cards â”€â”€
 function renderProjectBudget() {
     var d = pjFiltered;
     var totalBudget = d.reduce(function(a, p) { return a + (Number(p.wbud) || 0); }, 0);
@@ -7037,7 +7054,7 @@ function renderProjectBudget() {
             '<div class="mt-2 w-full bg-gray-200 rounded-full h-2"><div class="h-2 rounded-full" style="width:' + Math.min(pct, 100) + '%;background:' + barColor + '"></div></div></div>';
 }
 
-// ── Table ──
+// â”€â”€ Table â”€â”€
 function sortProjects(key) {
     if (pjSort.key === key) pjSort.asc = !pjSort.asc;
     else { pjSort.key = key; pjSort.asc = true; }
@@ -7066,14 +7083,14 @@ function renderProjectTable() {
             '<td class="px-3 py-2">' + (p.pt || '') + '</td>' +
             '<td class="px-3 py-2">' + _pjBadge(p.as) + '</td>' +
             '<td class="px-3 py-2 text-gray-600">' + (p.city || '') + (p.st ? ', ' + p.st : '') + '</td>' +
-            '<td class="px-3 py-2">' + (p.cst || '—') + '</td>' +
-            '<td class="px-3 py-2">' + (p.cco || '—') + '</td>' +
-            '<td class="px-3 py-2">' + (p.cer || '—') + '</td>' +
-            '<td class="px-3 py-2">' + (p.pos || '—') + '</td>' +
-            '<td class="px-3 py-2 text-right">' + (p.dur != null ? p.dur + 'd' : '—') + '</td>' +
+            '<td class="px-3 py-2">' + (p.cst || 'â€”') + '</td>' +
+            '<td class="px-3 py-2">' + (p.cco || 'â€”') + '</td>' +
+            '<td class="px-3 py-2">' + (p.cer || 'â€”') + '</td>' +
+            '<td class="px-3 py-2">' + (p.pos || 'â€”') + '</td>' +
+            '<td class="px-3 py-2 text-right">' + (p.dur != null ? p.dur + 'd' : 'â€”') + '</td>' +
             '<td class="px-3 py-2 text-right">' + _pjFmt$(p.wbud) + '</td>' +
-            '<td class="px-3 py-2 text-gray-600 truncate max-w-[160px]" title="' + (p.gc || '') + '">' + (p.gc || '—') + '</td>' +
-            '<td class="px-3 py-2 text-gray-500">' + (p.pmo || p.ph || '—') + '</td>' +
+            '<td class="px-3 py-2 text-gray-600 truncate max-w-[160px]" title="' + (p.gc || '') + '">' + (p.gc || 'â€”') + '</td>' +
+            '<td class="px-3 py-2 text-gray-500">' + (p.pmo || p.ph || 'â€”') + '</td>' +
             '</tr>';
     }).join('');
 
@@ -7085,7 +7102,7 @@ function renderProjectTable() {
         : '<span>' + data.length + ' projects</span>';
 }
 
-// ── Render all ──
+// â”€â”€ Render all â”€â”€
 function renderProjectsContent() {
     renderProjectKpis();
     renderProjectCharts();
@@ -7097,7 +7114,7 @@ function renderProjectsTab() {
     // In split mode, ACTIVE_PROJECTS is populated by async fetch + dict decode
     PROJECTS = (typeof ACTIVE_PROJECTS !== 'undefined' && ACTIVE_PROJECTS.length) ? ACTIVE_PROJECTS : PROJECTS;
     if (!PROJECTS || !PROJECTS.length) { return; }
-    // Apply filters (including banner slicer) — this populates pjFiltered and renders everything
+    // Apply filters (including banner slicer) â€” this populates pjFiltered and renders everything
     applyProjectFilters();
 }
 </script>
@@ -7109,7 +7126,7 @@ var _kpiCurrentSub = 'overview';
 var _kpiFiltered = {};
 var _kpiOrg = { srToDirs: {}, dirToRgns: {}, dirToSr: {}, rgnToDir: {} };
 
-// ── Sub-tab switching ──────────────────────────────────────────────────────
+// â”€â”€ Sub-tab switching â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function switchKpiSub(sub) {
     var subs = ['overview', 'safety', 'service', 'productivity', 'finance'];
     subs.forEach(function(s) {
@@ -7126,7 +7143,7 @@ function switchKpiSub(sub) {
     renderKpiCurrentSub();
 }
 
-// ── Org hierarchy builder ─────────────────────────────────────────────────
+// â”€â”€ Org hierarchy builder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildKpiOrgHierarchy() {
     _kpiOrg = { srToDirs: {}, dirToRgns: {}, dirToSr: {}, rgnToDir: {} };
     // Count occurrences to determine canonical mapping (majority wins)
@@ -7171,7 +7188,7 @@ function buildKpiOrgHierarchy() {
     });
 }
 
-// ── Cascading Filters (slicer behavior) ───────────────────────────────
+// â”€â”€ Cascading Filters (slicer behavior) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function initKpiFilters() {
     if (typeof KPI_DATA === 'undefined' || !KPI_DATA) return;
     buildKpiOrgHierarchy();
@@ -7237,10 +7254,10 @@ function clearKpiFilters() {
 function syncSubTabGroupBy() {
     var f = getKpiFilterValues();
     // Determine the right drill-down level based on header filters
-    // If region selected → already at lowest, group by rgn
-    // If director selected → drill to rgn
-    // If sr selected → drill to dir
-    // If nothing → group by sr (top level)
+    // If region selected â†’ already at lowest, group by rgn
+    // If director selected â†’ drill to rgn
+    // If sr selected â†’ drill to dir
+    // If nothing â†’ group by sr (top level)
     var orgLevel;
     if (f.rgn) {
         orgLevel = 'rgn';
@@ -7285,13 +7302,13 @@ function getKpiFilterValues() {
 function onKpiFilterChange(source) {
     var f = getKpiFilterValues();
 
-    // Cascade: Director → auto-set Sr Director
+    // Cascade: Director â†’ auto-set Sr Director
     if (source === 'dir' && f.dir && _kpiOrg.dirToSr[f.dir]) {
         var srEl = document.getElementById('kpiFilterSr');
         if (srEl) srEl.value = _kpiOrg.dirToSr[f.dir];
     }
 
-    // Cascade: Region → auto-set Director → auto-set Sr Director
+    // Cascade: Region â†’ auto-set Director â†’ auto-set Sr Director
     if (source === 'rgn' && f.rgn && _kpiOrg.rgnToDir[f.rgn]) {
         var dirEl = document.getElementById('kpiFilterDir');
         var parentDir = _kpiOrg.rgnToDir[f.rgn];
@@ -7302,7 +7319,7 @@ function onKpiFilterChange(source) {
         }
     }
 
-    // Cascade: Sr Director changed → reset Director & Region if not valid
+    // Cascade: Sr Director changed â†’ reset Director & Region if not valid
     if (source === 'sr') {
         var f2 = getKpiFilterValues();
         if (f2.sr && f2.dir && _kpiOrg.dirToSr[f2.dir] !== f2.sr) {
@@ -7326,7 +7343,7 @@ function onKpiFilterChange(source) {
 }
 
 function onKpiSubGroupByChange(subTab) {
-    // Bidirectional: sub-tab group-by changed → update header filters
+    // Bidirectional: sub-tab group-by changed â†’ update header filters
     var groupByIds = {
         safety: 'kpiSafetyGroupBy',
         service: 'kpiServiceGroupBy',
@@ -7341,14 +7358,14 @@ function onKpiSubGroupByChange(subTab) {
     if (val === 'sub') val = 'rgn';
     if (val === 'rm') val = 'rgn';
 
-    // When user picks "By Sr. Director" → clear Director & Region filters
+    // When user picks "By Sr. Director" â†’ clear Director & Region filters
     if (val === 'sr') {
         var dirEl = document.getElementById('kpiFilterDir');
         var rgnEl = document.getElementById('kpiFilterRgn');
         if (dirEl) dirEl.value = '';
         if (rgnEl) rgnEl.value = '';
     }
-    // When user picks "By Director" → clear Region filter
+    // When user picks "By Director" â†’ clear Region filter
     if (val === 'dir') {
         var rgnEl2 = document.getElementById('kpiFilterRgn');
         if (rgnEl2) rgnEl2.value = '';
@@ -7421,7 +7438,7 @@ function applyKpiFilters() {
     renderKpiCurrentSub();
 }
 
-// ── Header KPIs ────────────────────────────────────────────────────────────
+// â”€â”€ Header KPIs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function updateKpiHeader() {
     var safety = _kpiFiltered.safety || [];
     var totalHrs = 0, totalInc = 0;
@@ -7458,7 +7475,7 @@ function formatM(v) {
     return v.toFixed(0);
 }
 
-// ── Render current sub-tab ─────────────────────────────────────────────────
+// â”€â”€ Render current sub-tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderKpiCurrentSub() {
     if (_kpiCurrentSub === 'overview') renderKpiOverview();
     else if (_kpiCurrentSub === 'safety') renderKpiSafety();
@@ -7475,7 +7492,7 @@ function renderKpiTab() {
 
 <!-- KPI Centralized Renderers -->
 <script>
-// ── Overview (Centralized KPIs) ────────────────────────────────────────────
+// â”€â”€ Overview (Centralized KPIs) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderKpiOverview() {
     renderKpiOverviewCards();
     renderKpiTrirTrend();
@@ -7588,7 +7605,7 @@ function renderKpiTopLists() {
             + '<td class="px-3 py-2 text-right font-bold">' + r.val.avg.toFixed(1) + '</td>';
     }, ['Responses','Avg NPS']) : '<p class="text-gray-400 text-sm">No data</p>');
 
-    // Top 5 Productivity (highest TiT — from STORES)
+    // Top 5 Productivity (highest TiT â€” from STORES)
     var filteredStores = getKpiFilteredStores();
     var prodAgg = aggregateBy(filteredStores, 'sr', function(rows) {
         var s = 0, n = 0;
@@ -7617,7 +7634,7 @@ function renderKpiTopLists() {
     }, ['Projects','Spend %']) : '<p class="text-gray-400 text-sm">No data</p>');
 }
 
-// ── Safety Ranked ──────────────────────────────────────────────────────
+// â”€â”€ Safety Ranked â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderKpiSafety() {
     var groupBy = (document.getElementById('kpiSafetyGroupBy') || {}).value || 'sr';
     var agg = aggregateBy(_kpiFiltered.safety || [], groupBy, function(rows) {
@@ -7668,7 +7685,7 @@ function renderKpiSafety() {
     }
 }
 
-// ── Service Ranked ─────────────────────────────────────────────────────
+// â”€â”€ Service Ranked â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderKpiService() {
     var groupBy = (document.getElementById('kpiServiceGroupBy') || {}).value || 'sr';
     var agg = aggregateBy(_kpiFiltered.nps || [], groupBy, function(rows) {
@@ -7715,7 +7732,7 @@ function renderKpiService() {
     }
 }
 
-// ── Productivity Ranked (unified with TnT — uses STORES data) ──────────
+// â”€â”€ Productivity Ranked (unified with TnT â€” uses STORES data) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function getKpiFilteredStores() {
     // Filter STORES using the same KPI header filters for consistency
     if (typeof STORES === 'undefined' || !STORES.length) return [];
@@ -7789,7 +7806,7 @@ function renderKpiProductivity() {
     }
 }
 
-// ── Finance Ranked ──────────────────────────────────────────────────────
+// â”€â”€ Finance Ranked â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderKpiFinance() {
     var groupBy = (document.getElementById('kpiFinGroupBy') || {}).value || 'gc';
     var agg = aggregateBy(_kpiFiltered.finance || [], groupBy, function(rows) {
@@ -7882,7 +7899,7 @@ function renderKpiFinance() {
     }
 }
 
-// ── Utilities ───────────────────────────────────────────────────────────
+// â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function aggregateBy(rows, key, reducer) {
     var groups = {};
     rows.forEach(function(r) {
@@ -7923,7 +7940,7 @@ function rankTable(items, cellFn, headers) {
 </script>
 
 <script>
-// ── Win the Winter Tab JS ──
+// â”€â”€ Win the Winter Tab JS â”€â”€
 var wtwFiltered = WTW_DATA;
 var wtwSub = 'overview';
 var wtwStoreSumSort = { key: 'store', asc: true };
@@ -7994,7 +8011,7 @@ function ensureWtwStoreOps() {
     }
 }
 
-// ── Cascading Filters ──
+// â”€â”€ Cascading Filters â”€â”€
 function wtwPopulate(id, values) {
     const sel = document.getElementById(id);
     const cur = sel.value;
@@ -8005,7 +8022,7 @@ function wtwPopulate(id, values) {
 }
 
 function wtwApplyFilter() {
-    // Clear store slicer when filter changes — prevent stale slicer pointing to
+    // Clear store slicer when filter changes â€” prevent stale slicer pointing to
     // a store that's no longer in the filtered set
     wtwStoreSlicerSn = null;
     var badge = document.getElementById('wtwSlicerBadge');
@@ -8103,7 +8120,7 @@ function wtwShowSub(name) {
     });
 }
 
-// ── Render All ──
+// â”€â”€ Render All â”€â”€
 function wtwRenderAll() {
     const d = wtwGetFiltered();
     const total = d.length;
@@ -8132,7 +8149,7 @@ function wtwRenderAll() {
     wtwRenderReadyTab();
 }
 
-// ── BU Progress Table (slices by active filters) ──
+// â”€â”€ BU Progress Table (slices by active filters) â”€â”€
 function wtwRenderBuTable() {
     const srToBu = WTW_ORG.srToBu;
     const buOrder = ['East', 'North', 'West', 'Southeast', 'Southwest'];
@@ -8175,7 +8192,7 @@ function wtwRenderBuTable() {
     }).join('');
 }
 
-// ── Overview Stacked Bar Chart ──
+// â”€â”€ Overview Stacked Bar Chart â”€â”€
 function wtwRenderOverviewChart() {
     const phases = ['PH1', 'PH2', 'PH3'];
     const phaseLabels = ['Phase 1', 'Phase 2', 'Phase 3'];
@@ -8204,7 +8221,7 @@ function wtwRenderOverviewChart() {
     });
 }
 
-// ── Completion Metrics ──
+// â”€â”€ Completion Metrics â”€â”€
 function wtwRenderPmImprovement() {
     const completed = wtwGetFiltered().filter(w => w.st === 'COMPLETED');
     const withHrs = completed.filter(w => w.hrs != null && w.hrs > 0);
@@ -8219,7 +8236,7 @@ function wtwRenderPmImprovement() {
     document.getElementById('wtwMissingScores').textContent = compPct + '%';
 }
 
-// ── Store Summary ──
+// â”€â”€ Store Summary â”€â”€
 function wtwRenderStoreSummary() {
     const statusFilter = document.getElementById('wtwStoreSumStatus')?.value || '';
     const storeSearch = (document.getElementById('wtwStoreSearch')?.value || '').trim();
@@ -8297,7 +8314,7 @@ function wtwSortStoreSummary(key) {
     wtwRenderStoreSummary();
 }
 
-// ── In-Progress Table ──
+// â”€â”€ In-Progress Table â”€â”€
 function wtwRenderIpTable() {
     let data = wtwGetFiltered().filter(w => w.st === 'IN PROGRESS');
     const sk = wtwIpSort.key;
@@ -8333,7 +8350,7 @@ function wtwSortIp(key) {
     wtwRenderIpTable();
 }
 
-// ── Ready Tab ──
+// â”€â”€ Ready Tab â”€â”€
 function wtwRenderReadyTab() {
     const gf = wtwGetFiltered();
     const ip = gf.filter(w => w.st === 'IN PROGRESS');
@@ -8396,7 +8413,7 @@ function wtwExportReady() {
     a.click();
 }
 
-// ── Init WtW filters ──
+// â”€â”€ Init WtW filters â”€â”€
 function initWtw() {
     ensureWtwStoreOps();
     // Populate Ops Region dropdown
@@ -8417,7 +8434,7 @@ function initWtw() {
 </script>
 
 <script>
-// ── Year-over-Year Charts ──
+// â”€â”€ Year-over-Year Charts â”€â”€
 var yoyCharts = {};
 var yoyActive = {};
 
@@ -8472,7 +8489,7 @@ var FY_COLORS = {
 };
 
 // Build FY-overlay datasets from monthly data
-// maxYears: optional cap — keep only the N most recent FYs
+// maxYears: optional cap â€” keep only the N most recent FYs
 function buildFyOverlay(data, valueKey, maxYears) {
     var byFy = {};
     data.forEach(function(r) {
@@ -8516,7 +8533,7 @@ function makeLineChart(canvasId, datasets, yLabel) {
     });
 }
 
-// ── Exec YoY ──
+// â”€â”€ Exec YoY â”€â”€
 function renderYoyExec() {
     // FY comparison table & charts (from WOS/LEAKS date data)
     renderFyCompAll();
@@ -8617,7 +8634,7 @@ function renderWtwFyBar(canvasId) {
     });
 }
 
-// ── T&T YoY (built from WOS data) ──
+// â”€â”€ T&T YoY (built from WOS data) â”€â”€
 function renderYoyTnt() {
     // Monthly WO trends from WOS created dates
     var wosByMonth = {};
@@ -8636,7 +8653,7 @@ function renderYoyTnt() {
     makeLineChart('yoyTntNte', buildFyOverlay(nteData, 'v'), 'NTE ($K)');
 }
 
-// ── WtW YoY bar chart (WTW tab) ──
+// â”€â”€ WtW YoY bar chart (WTW tab) â”€â”€
 function renderYoyWtwBar(canvasId) {
     destroyYoy(canvasId);
     var ctx = document.getElementById(canvasId);
@@ -8697,7 +8714,7 @@ function renderYoyWtwTable() {
             var cls = diff >= 0 ? 'text-[#2a8703]' : 'text-[#ea1100]';
             delta = '<span class="font-bold ' + cls + '">' + (diff >= 0 ? '+' : '') + diff + ' pp</span>';
         } else {
-            delta = '<span class="text-gray-400">—</span>';
+            delta = '<span class="text-gray-400">â€”</span>';
         }
         var bgCls = i % 2 === 0 ? 'bg-white' : 'bg-gray-50';
         return '<tr class="' + bgCls + ' border-b border-gray-100">' +
@@ -8717,7 +8734,7 @@ function renderYoyWtw() {
     renderYoyWtwTable();
 }
 
-// ── Leak YoY (built from LEAKS data) ──
+// â”€â”€ Leak YoY (built from LEAKS data) â”€â”€
 function renderYoyLeak() {
     var leakByMonth = {};
     var doneByMonth = {};
@@ -8738,7 +8755,7 @@ function renderYoyLeak() {
     makeLineChart('yoyLeakCompletion', buildFyOverlay(rateData, 'v', 3), 'Completion %');
 }
 
-// ── HVAC YoY (TnT, Dewpoint, Alerts) ──
+// â”€â”€ HVAC YoY (TnT, Dewpoint, Alerts) â”€â”€
 function makeHvacChart(canvasId, data, labels, yLabel, unit, color) {
     destroyYoy(canvasId);
     var ctx = document.getElementById(canvasId);
@@ -8801,7 +8818,7 @@ function renderYoyHvac() {
     // 2. Avg Dewpoint
     makeHvacChart('yoyHvacDp',
         hvac.map(function(r) { return r.dp; }),
-        labels, 'Avg Dewpoint (°F)', '°F', '#ffc220');
+        labels, 'Avg Dewpoint (Â°F)', 'Â°F', '#ffc220');
 
     // 3. Avg Alerts
     makeHvacChart('yoyHvacAlerts',
@@ -8809,7 +8826,7 @@ function renderYoyHvac() {
         labels, 'Avg Alerts per Store', '', '#ea1100');
 }
 
-// ── Master render (only when YoY panel is open) ──
+// â”€â”€ Master render (only when YoY panel is open) â”€â”€
 function renderYoyForTab(tab) {
     if (tab === 'exec') renderYoyExec();
     else if (tab === 'tnt') renderYoyTnt();
@@ -8820,7 +8837,7 @@ function renderYoyForTab(tab) {
 </script>
 
 <script>
-// ── Fiscal Year Comparison Panel ──
+// â”€â”€ Fiscal Year Comparison Panel â”€â”€
 // Renders a YoY comparison table + charts from WOS/LEAKS date data
 
 var fyCompCharts = {};
@@ -8981,7 +8998,7 @@ function renderFyMonthlyChart(canvasId, metricKey, yLabel) {
 </script>
 
 <script>
-// ── Refrigeration Terminal Cases JS ──
+// â”€â”€ Refrigeration Terminal Cases JS â”€â”€
 
 // Build store-level summary from REF_TERMINAL array
 var refTermByStore = {};
@@ -9151,13 +9168,13 @@ function showRefTermDetail(sn) {
             '<td class="px-3 py-2 font-semibold">' + c.cn + '</td>' +
             '<td class="px-3 py-2 text-xs text-gray-600">' + c.sl + '</td>' +
             '<td class="px-3 py-2 text-center">' + classBadge + '</td>' +
-            '<td class="px-3 py-2 text-right">' + (c.sp > 0 ? c.sp + '°F' : '—') + '</td>' +
-            '<td class="px-3 py-2 text-right ' + tempCls + '">' + c.mt + '°F' +
+            '<td class="px-3 py-2 text-right">' + (c.sp > 0 ? c.sp + 'Â°F' : 'â€”') + '</td>' +
+            '<td class="px-3 py-2 text-right ' + tempCls + '">' + c.mt + 'Â°F' +
                 (tempDelta !== null && tempDelta > 0 ? ' <span class="text-xs text-red-500">(+' + tempDelta.toFixed(1) + ')</span>' : '') + '</td>' +
             '<td class="px-3 py-2 text-right ' + ptColor + '">' + c.pt + '%</td>' +
             '<td class="px-3 py-2 text-right">' + c.cd + '</td>' +
             '<td class="px-3 py-2 text-right">' + c.d30 + '</td>' +
-            '<td class="px-3 py-2 text-center">' + (c.wo > 0 ? '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">✅ ' + c.wo + '</span>' : '<span class="text-red-500">❌</span>') + '</td>' +
+            '<td class="px-3 py-2 text-center">' + (c.wo > 0 ? '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">âœ… ' + c.wo + '</span>' : '<span class="text-red-500">âŒ</span>') + '</td>' +
             '<td class="px-3 py-2 text-xs">' + c.cl + '</td>' +
             '</tr>';
     }).join('');
@@ -9174,12 +9191,12 @@ function renderStoreRefTerminal(sn) {
     buildRefTermData();
     var st = refTermByStore[sn];
     if (!st || st.cnt === 0) {
-        el.innerHTML = '<h4 class="font-semibold text-gray-700 mb-2">❄️ Refrigeration Terminal Cases</h4>' +
-            '<p class="text-green-600 text-sm">✅ No terminal refrigeration cases</p>';
+        el.innerHTML = '<h4 class="font-semibold text-gray-700 mb-2">â„ï¸ Refrigeration Terminal Cases</h4>' +
+            '<p class="text-green-600 text-sm">âœ… No terminal refrigeration cases</p>';
         return;
     }
 
-    var html = '<h4 class="font-semibold text-red-700 mb-2">❄️ Refrigeration Terminal Cases (' + st.cnt + ')</h4>';
+    var html = '<h4 class="font-semibold text-red-700 mb-2">â„ï¸ Refrigeration Terminal Cases (' + st.cnt + ')</h4>';
     html += '<div class="overflow-x-auto" style="max-height:250px;overflow-y:auto">';
     html += '<table class="min-w-full text-sm"><thead class="bg-red-50"><tr>' +
         '<th class="px-2 py-1 text-left text-xs">Case</th>' +
@@ -9198,17 +9215,17 @@ function renderStoreRefTerminal(sn) {
             '<td class="px-2 py-1 text-xs text-gray-500">' + c.sl + '</td>' +
             '<td class="px-2 py-1 text-center"><span class="px-1 py-0.5 rounded text-xs font-bold ' +
                 (c.cc === 'MT' ? 'bg-blue-100 text-blue-800' : 'bg-cyan-100 text-cyan-800') + '">' + c.cc + '</span></td>' +
-            '<td class="px-2 py-1 text-right">' + (c.sp > 0 ? c.sp + '°' : '—') + '</td>' +
-            '<td class="px-2 py-1 text-right">' + c.mt + '°</td>' +
+            '<td class="px-2 py-1 text-right">' + (c.sp > 0 ? c.sp + 'Â°' : 'â€”') + '</td>' +
+            '<td class="px-2 py-1 text-right">' + c.mt + 'Â°</td>' +
             '<td class="px-2 py-1 text-right ' + ptColor + '">' + c.pt + '%</td>' +
             '<td class="px-2 py-1 text-right">' + c.cd + 'd</td>' +
-            '<td class="px-2 py-1 text-center">' + (c.wo > 0 ? '✅' : '❌') + '</td></tr>';
+            '<td class="px-2 py-1 text-center">' + (c.wo > 0 ? 'âœ…' : 'âŒ') + '</td></tr>';
     });
     html += '</tbody></table></div>';
     el.innerHTML = html;
 }
 
-// ── Ranking Slicer ──
+// â”€â”€ Ranking Slicer â”€â”€
 function getRefTermFilteredStores() {
     ensureRefTermOrg();
     var banners = getActiveBanners();
@@ -9341,11 +9358,19 @@ function resetRefTermRanking() {
 }
 </script>
 
-<footer class="bg-gray-800 text-gray-400 text-xs text-center py-4 mt-8">
-    <p>HVAC Win-the-Winter FY26 &middot; Walmart Facilities Management &middot; Updated 2026-02-19 16:26 &middot; Auto-refreshes every 2hr</p>
-    <details class="mt-2 mx-auto max-w-2xl text-left">
-        <summary class="cursor-pointer hover:text-gray-200 transition">&#x1F4CB; Tableau ODS Source Reports</summary>
-        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs">
+<footer class="bg-gradient-to-r from-gray-900 to-gray-800 text-gray-400 text-xs text-center py-6 mt-8">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
+            <span class="text-2xl">&#x2744;</span>
+            <div>
+                <p class="text-white font-bold text-sm">Region 15B — HVAC Win-the-Winter Command Center</p>
+                <p class="text-gray-400">FM Director: Franky Gonzalez | Sr. Director: B.A. Glass | FY26</p>
+            </div>
+        </div>
+        <p>Walmart Facilities Management &middot; Data: Crystal MDM, ServiceChannel, ISP &middot; Auto-refreshes every 5 min</p>
+        <details class="mt-3 mx-auto max-w-2xl text-left">
+            <summary class="cursor-pointer hover:text-gray-200 transition">&#x1F4CB; Tableau ODS Source Reports</summary>
+            <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs">
             <a href="https://tableau-realestate.walmart.com/#/views/RefrigerantLeakReport" target="_blank" class="hover:text-blue-300">&#x1F4CA; Refrigerant Leak Report - All</a>
             <a href="https://tableau-realestate.walmart.com/#/views/RefrigerantLeakReport-WMT" target="_blank" class="hover:text-blue-300">&#x1F4CA; Leak Report - WMT</a>
             <a href="https://tableau-realestate.walmart.com/#/views/RefrigerantLeakReport-SAMS" target="_blank" class="hover:text-blue-300">&#x1F4CA; Leak Report - SAMS</a>
@@ -9360,10 +9385,11 @@ function resetRefTermRanking() {
     <div class="mt-3">
         <button onclick="exportAllCurrentTab()" class="px-4 py-2 bg-[#0053e2] hover:bg-[#004c91] text-white text-xs font-semibold rounded-lg shadow transition inline-flex items-center gap-2">&#x1F4E5; Export Current Tab</button>
     </div>
+    </div>
 </footer>
 
 <script>
-// ── State (banner vars defined in head.html) ──
+// â”€â”€ State (banner vars defined in head.html) â”€â”€
 let filtered = [];
 
 let currentPhase = '';
@@ -9371,7 +9397,7 @@ let tblSort = { key: 'tnt', asc: true };
 let chartInst = {};
 let mgrSlice = null; // { key: 'sr', value: 'Smith, John' }
 
-// ── Tab switching ──
+// â”€â”€ Tab switching â”€â”€
 function switchTab(tab) {
     currentTab = tab;
     ['exec','tnt','wtw','leak','hvac','nps','goals','projects','kpi'].forEach(t => {
@@ -9396,7 +9422,7 @@ function switchTab(tab) {
     setTimeout(_injectBottomExportButtons, 300);
 }
 
-// ── Cascading Filters ──
+// â”€â”€ Cascading Filters â”€â”€
 function populateFilter(id, values) {
     const sel = document.getElementById(id);
     const cur = sel.value;
@@ -9469,7 +9495,7 @@ registerNameSearch('f', {
     applyFn: 'applyFilters'
 });
 
-// ── KPIs ──
+// â”€â”€ KPIs â”€â”€
 // avg() defined in head.html
 function fmt(v, d=1) { return v !== null && v !== undefined ? (+v).toFixed(d) : '--'; }
 function fmtK(v) { v = +v; return v >= 1000 ? (v/1000).toFixed(1) + 'k' : v.toLocaleString(); }
@@ -9494,7 +9520,7 @@ function renderKPIs() {
     document.getElementById('statManagers').textContent = new Set(s.map(x => x.rm).filter(Boolean)).size;
 }
 
-// ── WM vs NHM vs Sam's ──
+// â”€â”€ WM vs NHM vs Sam's â”€â”€
 function renderSplit() {
     const sliced = getSlicedStores();
     const wm = sliced.filter(s => WM_BANNERS.has(s.bn));
@@ -9514,7 +9540,7 @@ function renderSplit() {
     document.getElementById('scPass').textContent = sc30.filter(v => v >= 87).length;
 }
 
-// ── Bottom 10 ──
+// â”€â”€ Bottom 10 â”€â”€
 function tntColor(v) {
     if (v == null) return 'text-gray-400';
     if (v >= 90) return 'text-green-600';
@@ -9542,7 +9568,7 @@ function renderBottom10() {
     document.getElementById('top5Body').innerHTML = top5.map(storeRow).join('');
 }
 
-// ── Breakdown Chart ──
+// â”€â”€ Breakdown Chart â”€â”€
 function destroyC(id) { if (chartInst[id]) { chartInst[id].destroy(); delete chartInst[id]; } }
 function renderBreakdown() {
     destroyC('breakdownChart');
@@ -9567,7 +9593,7 @@ function renderBreakdown() {
     });
 }
 
-// ── Manager Table ──
+// â”€â”€ Manager Table â”€â”€
 function sortTable(key) {
     tblSort = { key, asc: tblSort.key === key ? !tblSort.asc : (key === 'nm') };
     renderMgrTable();
@@ -9604,7 +9630,7 @@ function sliceMgr(name) {
     renderMgrStoreList();
 }
 
-// ── Store/Manager detail list under manager table ──
+// â”€â”€ Store/Manager detail list under manager table â”€â”€
 var mgrStoreSort = { key: 'tnt', asc: true };
 function sortMgrStores(key) {
     if (mgrStoreSort.key === key) mgrStoreSort.asc = !mgrStoreSort.asc;
@@ -9675,7 +9701,7 @@ function renderMgrStoreList() {
             <td class="px-3 py-2 text-sm text-gray-500">${s.mkt || '--'}</td>
             <td class="px-3 py-2 text-right font-semibold ${tntColor(s.tnt)}">${s.tnt != null ? fmt(s.tnt) + '%' : '--'}</td>
             <td class="px-3 py-2 text-right ${tntColor(s.hvac)}">${s.hvac != null ? fmt(s.hvac) + '%' : '--'}</td>
-            <td class="px-3 py-2 text-right ${s.dp != null && s.dp <= 52 ? 'text-[#2a8703]' : 'text-[#ea1100]'}">${s.dp != null ? fmt(s.dp) + '°F' : '--'}</td>
+            <td class="px-3 py-2 text-right ${s.dp != null && s.dp <= 52 ? 'text-[#2a8703]' : 'text-[#ea1100]'}">${s.dp != null ? fmt(s.dp) + 'Â°F' : '--'}</td>
             <td class="px-3 py-2 text-right ${tntColor(s.rack)}">${s.rack != null ? fmt(s.rack) + '%' : '--'}</td>
             <td class="px-3 py-2 text-right">${s.wos || 0}</td>
         </tr>`;
@@ -9759,7 +9785,7 @@ function renderMgrTable() {
             <td class="px-3 py-2 text-right font-semibold ${tntColor(r.tnt)}">${fmt(r.tnt)}%</td>
             <td class="px-3 py-2 text-right ${tntColor(r.tnt30)}">${fmt(r.tnt30)}%</td>
             <td class="px-3 py-2 text-right ${tntColor(r.hvac)}">${fmt(r.hvac)}%</td>
-            <td class="px-3 py-2 text-right ${r.dp != null && r.dp <= 52 ? 'text-green-600' : 'text-red-600'}">${r.dp != null ? fmt(r.dp) + '°F' : '--'}</td>
+            <td class="px-3 py-2 text-right ${r.dp != null && r.dp <= 52 ? 'text-green-600' : 'text-red-600'}">${r.dp != null ? fmt(r.dp) + 'Â°F' : '--'}</td>
             <td class="px-3 py-2 text-right ${tntColor(r.rack)}">${r.rack != null ? fmt(r.rack) + '%' : '--'}</td>
             <td class="px-3 py-2 text-center font-bold bg-blue-50 ${compositeColor(r.comp)}">${r.comp != null ? fmt(r.comp) + ' <span class="text-xs font-normal text-gray-400">(' + compositeGrade(r.comp) + ')</span>' : '--'}</td>
             <td class="px-3 py-2 text-right text-red-600">${r.loss ? '$' + fmtK(Math.round(r.loss)) : '--'}</td>
@@ -9768,7 +9794,7 @@ function renderMgrTable() {
     }).join('');
 }
 
-// ── Insights ──
+// â”€â”€ Insights â”€â”€
 function renderInsights() {
     const s = getSlicedStores();
     const tnts = s.filter(x => x.tnt != null).map(x => x.tnt);
@@ -9778,15 +9804,15 @@ function renderInsights() {
     const totalWos = s.reduce((a,x) => a + x.wos, 0);
     const doneWos = s.reduce((a,x) => a + x.wod, 0);
     const html = [
-        `<p>&#x1F4CA; <strong>${s.length}</strong> retail stores in view. TnT avg: <strong>${fmt(avg(tnts))}%</strong>. ${pass90}/${tnts.length} (${tnts.length ? Math.round(100*pass90/tnts.length) : 0}%) meeting ≥90% target.</p>`,
-        `<p>&#x1F321; Dewpoint: avg <strong>${fmt(avg(dps))}°F</strong>. ${dpPass}/${dps.length} (${dps.length ? Math.round(100*dpPass/dps.length) : 0}%) at or below 52°F target.</p>`,
+        `<p>&#x1F4CA; <strong>${s.length}</strong> retail stores in view. TnT avg: <strong>${fmt(avg(tnts))}%</strong>. ${pass90}/${tnts.length} (${tnts.length ? Math.round(100*pass90/tnts.length) : 0}%) meeting â‰¥90% target.</p>`,
+        `<p>&#x1F321; Dewpoint: avg <strong>${fmt(avg(dps))}Â°F</strong>. ${dpPass}/${dps.length} (${dps.length ? Math.round(100*dpPass/dps.length) : 0}%) at or below 52Â°F target.</p>`,
         totalWos > 0 ? `<p>&#x2744; WTW: <strong>${doneWos}/${totalWos}</strong> work orders completed (${Math.round(100*doneWos/totalWos)}%).</p>` : '',
         pass90 < tnts.length * 0.5 ? '<p>&#x26A0; <strong>Action needed:</strong> More than half of stores are below the 90% TnT target.</p>' : '',
     ].filter(Boolean).join('');
     document.getElementById('insightsContent').innerHTML = html;
 }
 
-// ── Store Detail ──
+// â”€â”€ Store Detail â”€â”€
 function showStore(sn) {
     const s = STORES.find(x => x.sn === sn);
     if (!s) return;
@@ -9808,7 +9834,7 @@ function showStore(sn) {
         { l: 'Dewpoint', v: s.dp, c: s.dp != null && s.dp <= 52 ? 'text-green-600' : 'text-red-600' },
         { l: 'Rack Score', v: s.rack, c: tntColor(s.rack) },
         { l: 'PM Score', v: s.pm, c: tntColor(s.pm) },
-    ].map(x => `<div class="text-center p-2 border rounded"><p class="text-xs text-gray-500">${x.l}</p><p class="font-bold ${x.c}">${x.v != null ? (x.l === 'Dewpoint' ? fmt(x.v) + '°F' : fmt(x.v) + '%') : '--'}</p></div>`).join('');
+    ].map(x => `<div class="text-center p-2 border rounded"><p class="text-xs text-gray-500">${x.l}</p><p class="font-bold ${x.c}">${x.v != null ? (x.l === 'Dewpoint' ? fmt(x.v) + 'Â°F' : fmt(x.v) + '%') : '--'}</p></div>`).join('');
 
     // Composite score for this store
     const storeComp = compositeScore(s);
@@ -9839,7 +9865,7 @@ function showStore(sn) {
 
 // WTW tab JS is now in wtw_js.html
 
-// ── Refrigeration Project Popup ──
+// â”€â”€ Refrigeration Project Popup â”€â”€
 function showRefrigProject(sn) {
     if (typeof REFRIG_PROJECTS === 'undefined' || !REFRIG_PROJECTS[sn]) return;
     const items = REFRIG_PROJECTS[sn];
@@ -9852,11 +9878,11 @@ function showRefrigProject(sn) {
     const schedBadge = v => {
         if (v === 'ZE') return '<span class="px-1.5 py-0.5 bg-green-100 text-green-800 rounded text-xs font-semibold">ZE</span>';
         if (v === 'X') return '<span class="px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-semibold">Planned</span>';
-        return '<span class="text-gray-400 text-xs">—</span>';
+        return '<span class="text-gray-400 text-xs">â€”</span>';
     };
     let html = `<div class="flex items-center gap-3 mb-4">
         <span class="text-3xl">\u{1F6A7}</span>
-        <div><h2 class="text-xl font-bold text-gray-800">Store #${sn} — Refrigeration Projects</h2>
+        <div><h2 class="text-xl font-bold text-gray-800">Store #${sn} â€” Refrigeration Projects</h2>
         <p class="text-sm text-gray-500">${Object.keys(byRack).length} rack(s), ${items.length} load group(s) scheduled</p></div>
     </div>`;
     // Legend
@@ -9892,8 +9918,8 @@ function showRefrigProject(sn) {
                 <td class="px-2 py-1 text-center">${cvBadge}</td>
                 <td class="px-2 py-1 text-center">${schedBadge(lg.s26)}</td>
                 <td class="px-2 py-1 text-center">${schedBadge(lg.s27)}</td>
-                <td class="px-2 py-1 text-center">${lg.pg || '—'}</td>
-                <td class="px-2 py-1 text-center">${lg.eol || '—'}</td></tr>`;
+                <td class="px-2 py-1 text-center">${lg.pg || 'â€”'}</td>
+                <td class="px-2 py-1 text-center">${lg.eol || 'â€”'}</td></tr>`;
         });
         html += '</tbody></table></div>';
     });
@@ -9904,7 +9930,7 @@ function showRefrigProject(sn) {
     modal.onclick = e => { if (e.target === modal) modal.classList.add('hidden'); };
 }
 
-// ── Init ──
+// â”€â”€ Init â”€â”€
 function initDashboard() {
     if (initDashboard._done) return;
     initDashboard._done = true;
@@ -9954,7 +9980,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof STORES !== 'undefined' && Array.isArray(STORES) && STORES.length > 0) {
             initDashboard();
         }
-    } catch(e) { /* split mode — loader will call initDashboard */ }
+    } catch(e) { /* split mode â€” loader will call initDashboard */ }
 });
 window.onerror = function(msg, src, line, col, err) {
     console.error('Global error:', msg, 'at line', line);
@@ -10027,13 +10053,13 @@ window.onerror = function(msg, src, line, col, err) {
                     banner.style.background = '#ea1100';
                 }
             }).catch(function() {
-                // Server not running the smart server — just hide banner
+                // Server not running the smart server â€” just hide banner
                 clearInterval(pollId);
                 banner.classList.add('hidden');
             });
         }, 2000);
     }).catch(function() {
-        // /api/refresh not available (running plain http.server) — silently ignore
+        // /api/refresh not available (running plain http.server) â€” silently ignore
     });
 })();
 </script>
