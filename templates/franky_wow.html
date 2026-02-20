@@ -9585,11 +9585,40 @@ function resetRefTermRanking() {
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════════════════════════
-// FRANKY'S WOW SCRIPTS - HEAT MAPS + COUNTDOWN
+// FRANKY'S WOW SCRIPTS - HEAT MAPS + COUNTDOWN + MM ADOPTION
 // ═══════════════════════════════════════════════════════════════════════════════════════════════
 let storeMapInstance = null;
 let ahuMapInstance = null;
 let countdownSeconds = 300;
+
+// Texas Region 15B approximate coordinates by city
+const CITY_COORDS = {
+    'HOUSTON': [29.76, -95.37], 'DALLAS': [32.78, -96.80], 'AUSTIN': [30.27, -97.74],
+    'SAN ANTONIO': [29.42, -98.49], 'FORT WORTH': [32.75, -97.33], 'EL PASO': [31.76, -106.49],
+    'ARLINGTON': [32.73, -97.11], 'PLANO': [33.02, -96.70], 'CORPUS CHRISTI': [27.80, -97.40],
+    'LUBBOCK': [33.58, -101.85], 'LAREDO': [27.51, -99.51], 'IRVING': [32.81, -96.95],
+    'AMARILLO': [35.22, -101.83], 'GRAND PRAIRIE': [32.75, -96.99], 'BROWNSVILLE': [25.90, -97.50],
+    'MCKINNEY': [33.20, -96.62], 'FRISCO': [33.15, -96.82], 'PASADENA': [29.69, -95.21],
+    'MESQUITE': [32.77, -96.60], 'KILLEEN': [31.12, -97.73], 'MCALLEN': [26.20, -98.23],
+    'WACO': [31.55, -97.15], 'DENTON': [33.21, -97.13], 'CARROLLTON': [32.95, -96.89],
+    'MIDLAND': [31.99, -102.08], 'ABILENE': [32.45, -99.73], 'BEAUMONT': [30.08, -94.13],
+    'ODESSA': [31.85, -102.37], 'ROUND ROCK': [30.51, -97.68], 'RICHARDSON': [32.95, -96.73],
+    'TYLER': [32.35, -95.30], 'COLLEGE STATION': [30.63, -96.33], 'LEWISVILLE': [33.05, -96.99],
+    'WICHITA FALLS': [33.91, -98.49], 'SAN ANGELO': [31.46, -100.44], 'LEAGUE CITY': [29.51, -95.09],
+    'SUGAR LAND': [29.62, -95.64], 'ALLEN': [33.10, -96.67], 'TEMPLE': [31.10, -97.34],
+    'THE WOODLANDS': [30.17, -95.50], 'NEW BRAUNFELS': [29.70, -98.12], 'CONROE': [30.31, -95.46],
+    'EDINBURG': [26.30, -98.16], 'BRYAN': [30.67, -96.37], 'MISSION': [26.22, -98.33],
+    'LONGVIEW': [32.50, -94.74], 'BAYTOWN': [29.74, -94.97], 'PHARR': [26.19, -98.18],
+    'DEFAULT': [31.5, -99.5] // Center of Texas
+};
+
+function getStoreCoords(store) {
+    const city = (store.city || store.city_name || '').toUpperCase().trim();
+    if (CITY_COORDS[city]) return CITY_COORDS[city];
+    // Add small random offset for stores without known city
+    const base = CITY_COORDS['DEFAULT'];
+    return [base[0] + (Math.random() - 0.5) * 4, base[1] + (Math.random() - 0.5) * 6];
+}
 
 // Countdown Timer
 function startCountdown() {
@@ -9608,39 +9637,61 @@ function startCountdown() {
 // Update hero stats from real data
 function updateHeroStats() {
     const stores = window.STORES || [];
-    document.getElementById('heroStores').textContent = stores.length;
-    const tntVals = stores.map(s => parseFloat(s.twt_ref) || 0).filter(v => v > 0);
+    document.getElementById('heroStores').textContent = stores.length || '--';
+    const tntVals = stores.map(s => parseFloat(s.tnt) || 0).filter(v => v > 0);
     const avgTnt = tntVals.length ? (tntVals.reduce((a,b) => a+b, 0) / tntVals.length).toFixed(1) : '--';
     document.getElementById('heroTnT').textContent = avgTnt + '%';
     document.getElementById('heroWTW').textContent = 'P2';
     document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
 }
 
-// Render Store Health Map
+// Render Store Health Map with REAL DATA
 function renderStoreHealthMap() {
     if (storeMapInstance) { storeMapInstance.remove(); storeMapInstance = null; }
     const mapEl = document.getElementById('storeHealthMap');
     if (!mapEl) return;
     
-    storeMapInstance = L.map('storeHealthMap').setView([32.5, -97], 6);
+    storeMapInstance = L.map('storeHealthMap').setView([31.5, -99.5], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(storeMapInstance);
     
     let excellent = 0, good = 0, warning = 0, critical = 0;
     const stores = window.STORES || [];
     
+    if (stores.length === 0) {
+        document.getElementById('healthExcellent').textContent = '0';
+        document.getElementById('healthGood').textContent = '0';
+        document.getElementById('healthWarning').textContent = '0';
+        document.getElementById('healthCritical').textContent = '0';
+        return;
+    }
+    
     stores.forEach(s => {
-        const lat = parseFloat(s.latitude) || (30 + Math.random() * 6);
-        const lng = parseFloat(s.longitude) || (-100 + Math.random() * 10);
-        const tnt = parseFloat(s.twt_ref) || 0;
+        const [lat, lng] = getStoreCoords(s);
+        const tnt = parseFloat(s.tnt) || 0;
+        const storeNum = s.sn || s.store_number || '?';
+        const storeName = s.nm || s.name || '';
+        const city = s.city || s.city_name || '';
+        const state = s.state || s.state_cd || 'TX';
         
-        let color = '#f43f5e'; // rose
-        if (tnt >= 95) { color = '#10b981'; excellent++; } // emerald
-        else if (tnt >= 85) { color = '#f59e0b'; good++; } // amber
-        else if (tnt >= 75) { color = '#f97316'; warning++; } // orange
+        let color = '#f43f5e'; // rose - critical
+        let status = 'Critical';
+        if (tnt >= 95) { color = '#10b981'; excellent++; status = 'Excellent'; }
+        else if (tnt >= 85) { color = '#f59e0b'; good++; status = 'Good'; }
+        else if (tnt >= 75) { color = '#f97316'; warning++; status = 'Warning'; }
         else { critical++; }
         
         L.circleMarker([lat, lng], { radius: 12, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.85 })
-            .bindPopup(`<div style="font-family:system-ui;padding:4px"><b>Store #${s.store_number}</b><br>${s.city_name || ''}, ${s.state_cd || ''}<br><b style="color:${color}">✔️ TnT: ${tnt.toFixed(1)}%</b></div>`)
+            .bindPopup(`
+                <div style="font-family:system-ui;min-width:180px">
+                    <div style="font-weight:bold;font-size:14px;margin-bottom:4px">Store #${storeNum}</div>
+                    <div style="color:#666;font-size:12px;margin-bottom:8px">${storeName}<br>${city}, ${state}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#f8f9fa;border-radius:6px">
+                        <span style="font-size:11px;color:#666">TnT Score</span>
+                        <span style="font-weight:bold;font-size:16px;color:${color}">${tnt.toFixed(1)}%</span>
+                    </div>
+                    <div style="text-align:center;margin-top:6px;font-size:11px;color:${color};font-weight:600">${status}</div>
+                </div>
+            `)
             .addTo(storeMapInstance);
     });
     
@@ -9648,55 +9699,166 @@ function renderStoreHealthMap() {
     document.getElementById('healthGood').textContent = good;
     document.getElementById('healthWarning').textContent = warning;
     document.getElementById('healthCritical').textContent = critical;
+    
+    // Fit bounds to markers
+    if (stores.length > 0) {
+        const bounds = stores.map(s => getStoreCoords(s));
+        storeMapInstance.fitBounds(bounds, { padding: [20, 20] });
+    }
 }
 
-// Render AHU/RTU Map
+// Render AHU/RTU Map with REAL DATA from TERM_UNITS
 function renderAhuMap() {
     if (ahuMapInstance) { ahuMapInstance.remove(); ahuMapInstance = null; }
     const mapEl = document.getElementById('ahuRtuMap');
     if (!mapEl) return;
     
-    ahuMapInstance = L.map('ahuRtuMap').setView([32.5, -97], 6);
+    ahuMapInstance = L.map('ahuRtuMap').setView([31.5, -99.5], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(ahuMapInstance);
     
-    let online = 0, offline = 0;
     const stores = window.STORES || [];
-    const totalUnits = stores.length * 3;
+    const termUnits = window.TERM_UNITS || {};
+    const filter = document.getElementById('unitFilter')?.value || 'all';
+    
+    let totalUnits = 0, online = 0, offline = 0;
+    let tempSum = 0, dpSum = 0, tempCount = 0, dpCount = 0;
+    const tableRows = [];
     
     stores.forEach(s => {
-        const lat = parseFloat(s.latitude) || (30 + Math.random() * 6);
-        const lng = parseFloat(s.longitude) || (-100 + Math.random() * 10);
-        const status = Math.random() > 0.1 ? 'online' : 'offline';
-        const color = status === 'online' ? '#10b981' : '#f43f5e';
-        if (status === 'online') online += 3; else offline += 3;
+        const storeNum = s.sn || s.store_number || '';
+        const units = termUnits[storeNum] || [];
+        const [lat, lng] = getStoreCoords(s);
         
-        L.circleMarker([lat, lng], { radius: 10, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.85 })
-            .bindPopup(`<div style="font-family:system-ui"><b>Store #${s.store_number}</b><br>Units: 3 AHU/RTU<br>Status: <span style="color:${color};font-weight:bold">${status}</span></div>`)
-            .addTo(ahuMapInstance);
+        let storeOnline = 0, storeOffline = 0, storeUnits = [];
+        
+        units.forEach(u => {
+            const unitType = (u.ut || u.cl || '').toLowerCase();
+            const isRtu = unitType.includes('rooftop') || unitType.includes('rtu');
+            const isAhu = unitType.includes('air handler') || unitType.includes('ahu');
+            
+            if (filter === 'rtu' && !isRtu) return;
+            if (filter === 'ahu' && !isAhu) return;
+            
+            totalUnits++;
+            const hasAlarm = u.al > 0 || u.hf > 0 || u.lo > 0;
+            if (hasAlarm) { storeOffline++; offline++; } else { storeOnline++; online++; }
+            
+            const zt = parseFloat(u.zt);
+            const zd = parseFloat(u.zd);
+            if (zt > -1000 && zt < 200) { tempSum += zt; tempCount++; }
+            if (zd > -100 && zd < 100) { dpSum += zd; dpCount++; }
+            
+            storeUnits.push({ type: isRtu ? 'RTU' : isAhu ? 'AHU' : 'HVAC', status: hasAlarm ? 'Offline' : 'Online', zt, zd, name: u.un });
+        });
+        
+        if (storeUnits.length > 0) {
+            const pctOnline = storeOnline / (storeOnline + storeOffline);
+            const color = pctOnline >= 0.9 ? '#10b981' : pctOnline >= 0.7 ? '#f59e0b' : '#f43f5e';
+            
+            L.circleMarker([lat, lng], { radius: 10, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.85 })
+                .bindPopup(`
+                    <div style="font-family:system-ui;min-width:200px">
+                        <div style="font-weight:bold;font-size:14px;margin-bottom:8px">Store #${storeNum}</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">
+                            <div style="background:#d1fae5;padding:6px;border-radius:4px;text-align:center"><div style="font-weight:bold;color:#059669">${storeOnline}</div><div style="color:#666;font-size:10px">Online</div></div>
+                            <div style="background:#fee2e2;padding:6px;border-radius:4px;text-align:center"><div style="font-weight:bold;color:#dc2626">${storeOffline}</div><div style="color:#666;font-size:10px">Offline</div></div>
+                        </div>
+                        <div style="margin-top:8px;font-size:11px;color:#666">Total Units: ${storeUnits.length}</div>
+                    </div>
+                `)
+                .addTo(ahuMapInstance);
+            
+            // Add to table (first 20 stores)
+            if (tableRows.length < 20) {
+                storeUnits.slice(0, 2).forEach(u => {
+                    tableRows.push({ store: storeNum, ...u });
+                });
+            }
+        }
     });
     
-    document.getElementById('ahuTotal').textContent = totalUnits;
-    document.getElementById('ahuOnline').textContent = online;
-    document.getElementById('ahuOffline').textContent = offline;
-    document.getElementById('ahuAvgTemp').textContent = '71°';
-    document.getElementById('ahuAvgDp').textContent = '52°';
+    document.getElementById('ahuTotal').textContent = totalUnits || '--';
+    document.getElementById('ahuOnline').textContent = online || '--';
+    document.getElementById('ahuOffline').textContent = offline || '--';
+    document.getElementById('ahuAvgTemp').textContent = tempCount ? Math.round(tempSum / tempCount) + '°' : '--°';
+    document.getElementById('ahuAvgDp').textContent = dpCount ? Math.round(dpSum / dpCount) + '°' : '--°';
     
-    document.getElementById('ahuTableBody').innerHTML = stores.slice(0, 15).map(s => `
+    document.getElementById('ahuTableBody').innerHTML = tableRows.map(r => `
         <tr class="border-b border-gray-100 hover:bg-sky-50 transition">
-            <td class="px-4 py-3 font-semibold text-gray-800">#${s.store_number}</td>
-            <td class="px-4 py-3"><span class="pill-info px-2 py-1 rounded-full text-xs font-medium">RTU</span></td>
-            <td class="px-4 py-3"><span class="pill-success px-2 py-1 rounded-full text-xs font-medium">Online</span></td>
-            <td class="px-4 py-3">71°F</td>
-            <td class="px-4 py-3">52°F</td>
+            <td class="px-4 py-3 font-semibold text-gray-800">#${r.store}</td>
+            <td class="px-4 py-3"><span class="pill-info px-2 py-1 rounded-full text-xs font-medium">${r.type}</span></td>
+            <td class="px-4 py-3"><span class="${r.status === 'Online' ? 'pill-success' : 'pill-danger'} px-2 py-1 rounded-full text-xs font-medium">${r.status}</span></td>
+            <td class="px-4 py-3">${r.zt > -1000 ? r.zt.toFixed(1) + '°F' : '--'}</td>
+            <td class="px-4 py-3">${r.zd > -100 ? r.zd.toFixed(1) + '°F' : '--'}</td>
         </tr>
-    `).join('');
+    `).join('') || '<tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No unit data available</td></tr>';
+    
+    if (stores.length > 0) {
+        const bounds = stores.map(s => getStoreCoords(s));
+        ahuMapInstance.fitBounds(bounds, { padding: [20, 20] });
+    }
 }
 
-// Render MM Chart
+// Render MM Adoption with REAL DATA
 function renderMmChart() {
     const ctx = document.getElementById('mmChart');
     if (!ctx) return;
+    
     const stores = window.STORES || [];
+    if (stores.length === 0) return;
+    
+    // Group by FM Director and calculate adoption (using 'adp' field if available, else estimate)
+    const fmData = {};
+    let totalAdopted = 0;
+    
+    stores.forEach(s => {
+        const fm = s.dir || s.fm_director_name || 'Unknown';
+        if (!fmData[fm]) fmData[fm] = { total: 0, adopted: 0 };
+        fmData[fm].total++;
+        
+        // Use 'adp' field (adoption) if available, else estimate from TnT
+        const adopted = s.adp > 0 || (s.tnt && s.tnt > 85) ? 1 : 0;
+        fmData[fm].adopted += adopted;
+        totalAdopted += adopted;
+    });
+    
+    const labels = Object.keys(fmData).filter(k => k !== 'Unknown' && fmData[k].total > 0).slice(0, 10);
+    const data = labels.map(fm => fmData[fm].total ? Math.round((fmData[fm].adopted / fmData[fm].total) * 100) : 0);
+    
+    // Update MM stats
+    const adoptionRate = stores.length ? Math.round((totalAdopted / stores.length) * 100) : 0;
+    document.getElementById('mmRate').textContent = adoptionRate + '%';
+    document.getElementById('mmTotal').textContent = stores.length;
+    document.getElementById('mmAdopted').textContent = totalAdopted;
+    document.getElementById('mmPending').textContent = stores.length - totalAdopted;
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: { 
+            labels, 
+            datasets: [{ 
+                label: 'Adoption %',
+                data, 
+                backgroundColor: 'rgba(139, 92, 246, 0.8)', 
+                borderRadius: 8,
+                borderSkipped: false
+            }] 
+        },
+        options: { 
+            indexAxis: 'y', 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { 
+                legend: { display: false },
+                tooltip: { callbacks: { label: (ctx) => ctx.raw + '% Adoption' } }
+            }, 
+            scales: { 
+                x: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' }, ticks: { callback: v => v + '%' } }, 
+                y: { grid: { display: false } } 
+            } 
+        }
+    });
+}
     const fmData = {};
     stores.forEach(s => {
         const fm = s.fm_director_name || 'Unknown';
@@ -9705,14 +9867,6 @@ function renderMmChart() {
         fmData[fm].adopted += Math.random() > 0.2 ? 1 : 0;
     });
     const labels = Object.keys(fmData).filter(k => k !== 'Unknown').slice(0, 8);
-    const data = labels.map(fm => fmData[fm].total ? Math.round((fmData[fm].adopted / fmData[fm].total) * 100) : 0);
-    new Chart(ctx, {
-        type: 'bar',
-        data: { labels, datasets: [{ data, backgroundColor: 'rgba(139, 92, 246, 0.8)', borderRadius: 8 }] },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } } }
-    });
-}
-
 // Extend switchTab
 const _origSwitchTab = typeof switchTab === 'function' ? switchTab : null;
 window.switchTab = function(tab) {
