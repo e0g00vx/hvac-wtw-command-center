@@ -277,6 +277,21 @@ async def index(request: Request):
         "fm_director": FM_DIRECTOR
     })
 
+# Mount data directory for JSON files
+DATA_DIR = BASE_DIR / "data"
+if DATA_DIR.exists():
+    app.mount("/data", StaticFiles(directory=str(DATA_DIR)), name="data")
+
+@app.get("/api/stores")
+async def get_stores():
+    """Return stores data for dashboard."""
+    return JSONResponse(_cache.get("stores", []))
+
+@app.get("/api/work-orders")
+async def get_work_orders():
+    """Return work orders data."""
+    return JSONResponse(_cache.get("hvac_wos", []))
+
 @app.get("/api/data")
 async def get_all_data():
     """Return all cached data including director comparison."""
