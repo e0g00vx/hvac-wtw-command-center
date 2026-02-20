@@ -193,8 +193,12 @@ def load_fallback_data():
     """Load data from embedded Python data module."""
     from data import STORES, AHU_RTU_WOS, COMM_LOSS, LEAK_SUMMARY, PROJECTS, FS_MANAGERS, WTW_STATUS, WTW_PHASES
     from data_directors import DIRECTORS, DIRECTOR_METRICS, HISTORICAL_TNT, DIRECTOR_TRENDS, TREND_MONTHS, WO_CATEGORIES, MILESTONES
+    from store_managers import enrich_stores_with_managers, STORE_MANAGERS
     
-    _cache["stores"] = STORES
+    # Enrich stores with store manager names
+    enriched_stores = enrich_stores_with_managers(STORES.copy())
+    _cache["stores"] = enriched_stores
+    _cache["store_managers"] = STORE_MANAGERS
     _cache["ahu_rtu"] = AHU_RTU_WOS
     _cache["comm_loss"] = COMM_LOSS
     _cache["leak_summary"] = LEAK_SUMMARY
@@ -287,6 +291,7 @@ async def get_all_data():
         "trend_months": _cache.get("trend_months", []),
         "wo_categories": _cache.get("wo_categories", {}),
         "milestones": _cache.get("milestones", []),
+        "store_managers": _cache.get("store_managers", {}),
         "last_refresh": _cache["last_refresh"],
         "refresh_count": _cache["refresh_count"],
         "config": {

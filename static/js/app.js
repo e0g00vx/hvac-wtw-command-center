@@ -71,6 +71,7 @@ async function loadData() {
     S.fsManagers = data.fs_managers || {};
     S.wtwStatus = data.wtw_status || [];
     S.wtwPhases = data.wtw_phases || {};
+    S.storeManagers = data.store_managers || {};
     S.lastRefresh = data.last_refresh;
     S.config = data.config || {};
     S.refreshInterval = data.config?.refresh_interval || 300;
@@ -1247,7 +1248,8 @@ function showMapDrillDown(type, data) {
         </div>
       </div>
       <div class="text-sm text-gray-600 mb-3">
-        <strong>Manager:</strong> ${s.mgr} | <strong>Sub-Region:</strong> ${s.sub}
+        <strong>Manager:</strong> ${s.mgr} | <strong>Sub-Region:</strong> ${s.sub}<br>
+        <strong>👤 Store Manager:</strong> ${s.store_mgr || S.storeManagers?.[s.store] || 'Unknown'}
       </div>
       ${wos.length ? `
         <h5 class="font-bold text-gray-700 mb-2">🛠️ Work Orders</h5>
@@ -1299,7 +1301,8 @@ function showMapDrillDown(type, data) {
         </div>
       </div>
       <div class="text-sm text-gray-600 mb-3">
-        <strong>Location:</strong> ${store.city}, ${store.state} | <strong>Sub:</strong> ${store.sub} | <strong>Type:</strong> ${store.store_type}
+        <strong>Location:</strong> ${store.city}, ${store.state} | <strong>Sub:</strong> ${store.sub} | <strong>Type:</strong> ${store.store_type}<br>
+        <strong>👤 Store Manager:</strong> ${store.store_mgr || S.storeManagers?.[store.store] || 'Unknown'}
       </div>
       <div class="flex items-center gap-2 mb-3">
         <button onclick="copyStoreWOs(${store.store})" class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
@@ -1496,16 +1499,18 @@ function drillDownFSM(mgr, fsm) {
       <h3 class="font-bold text-gray-700 mb-2">🏢 Stores (${stores.length})</h3>
       <div class="max-h-80 overflow-y-auto mb-4">
         <table class="tbl text-sm"><thead><tr>
-          <th>Store</th><th>City</th><th>Type</th><th>TnT</th><th>WOs</th>
+          <th>Store</th><th>City</th><th>Store Mgr</th><th>Type</th><th>TnT</th><th>WOs</th>
         </tr></thead><tbody>
   `;
   
   stores.sort((a, b) => (a.tit || 0) - (b.tit || 0)).forEach(s => {
     const storeWOs = wos.filter(w => w.store === s.store);
     const color = getColor(s.tit);
+    const storeMgr = s.store_mgr || S.storeManagers?.[s.store] || '-';
     html += `<tr class="cursor-pointer hover:bg-blue-50" onclick="drillDownStore(${s.store})">
       <td class="font-mono font-bold" style="color: #0053e2">${s.store}</td>
       <td>${s.city}, ${s.state}</td>
+      <td class="text-xs text-gray-600">${storeMgr}</td>
       <td class="text-xs">${s.store_type}</td>
       <td class="font-bold" style="color: ${color}">${s.tit ? s.tit.toFixed(1) + '%' : 'N/A'}</td>
       <td class="font-bold ${storeWOs.length ? 'text-red-600' : 'text-green-600'}">${storeWOs.length || '✓'}</td>
@@ -1528,6 +1533,7 @@ function drillDownStore(store) {
         <h2 class="text-xl font-bold">🏢 Store #${store}</h2>
       </div>
       <p class="text-gray-500 mb-4">${s?.city}, ${s?.state} | ${s?.store_type} | Sub: ${s?.sub}</p>
+      <p class="text-gray-600 mb-4">👤 <strong>Store Manager:</strong> ${s?.store_mgr || S.storeManagers?.[store] || 'Unknown'}</p>
       
       <div class="grid grid-cols-3 gap-4 mb-6">
         <div class="bg-blue-50 rounded-lg p-3 text-center">
