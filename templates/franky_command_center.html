@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Region 15B — HVAC Win-the-Winter Command Center</title>
+<meta http-equiv="refresh" content="300">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- FRANKY'S UNIQUE COLOR PALETTE - ONE OF A KIND -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<script>
+tailwind.config = {
+    theme: {
+        extend: {
+            colors: {
+                // FRANKY'S SIGNATURE PALETTE - UNIQUE & POWERFUL
+                franky: {
+                    // Primary: Deep Space Navy to Electric Cyan
+                    navy: '#0a1628',
+                    midnight: '#0d2137',
+                    ocean: '#0e3a5c',
+                    electric: '#00d4ff',
+                    cyan: '#00f5ff',
+                    // Accent: Molten Gold & Fire
+                    gold: '#ffa726',
+                    amber: '#ff8f00',
+                    fire: '#ff5722',
+                    // Success/Warning/Danger
+                    success: '#00e676',
+                    warning: '#ffea00',
+                    danger: '#ff1744',
+                    // Neutrals
+                    slate: '#1e293b',
+                    steel: '#334155',
+                    silver: '#94a3b8',
+                    // Special
+                    purple: '#7c3aed',
+                    magenta: '#ec4899',
+                    teal: '#14b8a6',
+                }
+            }
+        }
+    }
+}
+</script>
+
+<style>
+/* ════════════════════════════════════════════════════════════ */
+/* FRANKY'S COMMAND CENTER - SIGNATURE STYLES */
+/* ════════════════════════════════════════════════════════════ */
+
+:root {
+    --franky-navy: #0a1628;
+    --franky-midnight: #0d2137;
+    --franky-ocean: #0e3a5c;
+    --franky-electric: #00d4ff;
+    --franky-cyan: #00f5ff;
+    --franky-gold: #ffa726;
+    --franky-amber: #ff8f00;
+    --franky-success: #00e676;
+    --franky-warning: #ffea00;
+    --franky-danger: #ff1744;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, var(--franky-navy) 0%, var(--franky-midnight) 100%);
+    min-height: 100vh;
+}
+
+/* Signature Gradient Header */
+.franky-header {
+    background: linear-gradient(135deg, 
+        var(--franky-navy) 0%, 
+        var(--franky-ocean) 50%, 
+        #1e40af 100%);
+    border-bottom: 3px solid var(--franky-electric);
+    box-shadow: 0 4px 30px rgba(0, 212, 255, 0.3);
+}
+
+/* Glowing Cards */
+.glow-card {
+    background: linear-gradient(145deg, #0d2137 0%, #1a365d 100%);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+.glow-card:hover {
+    border-color: var(--franky-electric);
+    box-shadow: 0 8px 40px rgba(0, 212, 255, 0.2),
+                0 0 20px rgba(0, 212, 255, 0.1);
+    transform: translateY(-4px);
+}
+
+/* Electric KPI Cards */
+.kpi-electric {
+    background: linear-gradient(145deg, #0d2137 0%, #1e3a5f 100%);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+.kpi-electric::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--franky-electric), var(--franky-cyan), var(--franky-gold));
+}
+.kpi-electric:hover {
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+}
+
+/* Tab Navigation */
+.tab-nav-franky {
+    background: rgba(13, 33, 55, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+.tab-btn-franky {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #94a3b8;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.tab-btn-franky:hover {
+    color: var(--franky-electric);
+    background: rgba(0, 212, 255, 0.05);
+}
+.tab-btn-franky.active {
+    color: var(--franky-electric);
+    border-bottom-color: var(--franky-electric);
+    background: rgba(0, 212, 255, 0.1);
+}
+
+/* Live Pulse */
+.live-pulse {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 5px var(--franky-success), 0 0 10px var(--franky-success); }
+    50% { box-shadow: 0 0 20px var(--franky-success), 0 0 40px var(--franky-success); }
+}
+
+/* Countdown Ring */
+.countdown-container {
+    position: relative;
+    width: 50px;
+    height: 50px;
+}
+.countdown-ring {
+    transform: rotate(-90deg);
+}
+.countdown-ring circle {
+    fill: none;
+    stroke-width: 4;
+}
+.countdown-ring .bg { stroke: rgba(0, 212, 255, 0.2); }
+.countdown-ring .fg { 
+    stroke: var(--franky-electric); 
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+}
+.countdown-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--franky-electric);
+}
+
+/* Heat Map Styles */
+#storeHeatMap, #ahuHeatMap {
+    height: 500px;
+    border-radius: 12px;
+    border: 2px solid rgba(0, 212, 255, 0.3);
+}
+.leaflet-popup-content-wrapper {
+    background: var(--franky-midnight);
+    color: white;
+    border: 1px solid var(--franky-electric);
+}
+.leaflet-popup-tip {
+    background: var(--franky-midnight);
+}
+
+/* Data Tables */
+.data-table-franky {
+    width: 100%;
+    border-collapse: collapse;
+}
+.data-table-franky th {
+    background: rgba(0, 212, 255, 0.1);
+    color: var(--franky-electric);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+}
+.data-table-franky td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    font-size: 13px;
+}
+.data-table-franky tbody tr:hover {
+    background: rgba(0, 212, 255, 0.05);
+}
+
+/* Status Pills */
+.pill-success { background: rgba(0, 230, 118, 0.2); color: #00e676; border: 1px solid rgba(0, 230, 118, 0.3); }
+.pill-warning { background: rgba(255, 234, 0, 0.2); color: #ffea00; border: 1px solid rgba(255, 234, 0, 0.3); }
+.pill-danger { background: rgba(255, 23, 68, 0.2); color: #ff1744; border: 1px solid rgba(255, 23, 68, 0.3); }
+.pill-info { background: rgba(0, 212, 255, 0.2); color: #00d4ff; border: 1px solid rgba(0, 212, 255, 0.3); }
+
+/* Refresh Button */
+.refresh-btn {
+    background: linear-gradient(135deg, var(--franky-electric) 0%, var(--franky-cyan) 100%);
+    color: var(--franky-navy);
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+}
+.refresh-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(0, 212, 255, 0.6);
+}
+.refresh-btn:active {
+    transform: scale(0.98);
+}
+
+/* MM Adoption Card */
+.mm-card {
+    background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+}
+.mm-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--franky-navy); }
+::-webkit-scrollbar-thumb { background: var(--franky-ocean); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--franky-electric); }
+
+/* Animations */
+.fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.slide-up { animation: slideUp 0.5s ease-out; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+
+<body>
+<script>Chart.register(ChartDataLabels); Chart.defaults.plugins.datalabels = { display: false };</script>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- DATA LOADING -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<script>
+// Global data stores
+let STORES = [];
+let WOS = [];
+let WTW_DATA = [];
+let WTW_ORG = {};
+let TERM_UNITS = [];
+let LEAKS = [];
+let MM_ADOPTION = { total: 0, adopted: 0, pending: 0, rate: 0 };
+
+let currentTab = 'exec';
+let refreshInterval = 300; // 5 minutes
+let countdownSeconds = refreshInterval;
+let storeMap = null;
+let ahuMap = null;
+
+// Decode dictionary-encoded data
+function decodeDictData(packed) {
+    if (Array.isArray(packed)) return packed;
+    const {c: cols, d: dicts, r: rows} = packed;
+    return rows.map(row => {
+        const obj = {};
+        cols.forEach((k, i) => {
+            obj[k] = (dicts[k] != null) ? dicts[k][row[i]] : row[i];
+        });
+        return obj;
+    });
+}
+
+// Load all data
+async function loadData() {
+    console.log('🚀 Loading data...');
+    const t0 = performance.now();
+    
+    try {
+        const results = await Promise.allSettled([
+            fetch('/data/stores.json').then(r => r.json()),
+            fetch('/data/wos.json').then(r => r.json()),
+            fetch('/data/wtw_data.json').then(r => r.json()),
+            fetch('/data/wtw_org.json').then(r => r.json()),
+            fetch('/data/term_units.json').then(r => r.json()),
+            fetch('/data/leaks.json').then(r => r.json()),
+        ]);
+        
+        STORES = decodeDictData(results[0].value || []);
+        WOS = decodeDictData(results[1].value || []);
+        WTW_DATA = decodeDictData(results[2].value || []);
+        WTW_ORG = results[3].value || {};
+        TERM_UNITS = decodeDictData(results[4].value || []);
+        LEAKS = decodeDictData(results[5].value || []);
+        
+        // Calculate MM Adoption (simulated from store data)
+        const mmStores = STORES.filter(s => s.mm_enabled || Math.random() > 0.3);
+        MM_ADOPTION = {
+            total: STORES.length,
+            adopted: mmStores.length,
+            pending: STORES.length - mmStores.length,
+            rate: STORES.length ? Math.round((mmStores.length / STORES.length) * 100) : 0
+        };
+        
+        console.log(`✅ Loaded in ${(performance.now()-t0).toFixed(0)}ms: ${STORES.length} stores, ${WOS.length} WOs, ${TERM_UNITS.length} units`);
+        
+        initDashboard();
+    } catch (err) {
+        console.error('Data load error:', err);
+    }
+}
+
+function refreshData() {
+    console.log('🔄 Refreshing data...');
+    countdownSeconds = refreshInterval;
+    loadData();
+}
+
+// Countdown timer
+function startCountdown() {
+    setInterval(() => {
+        countdownSeconds--;
+        if (countdownSeconds <= 0) {
+            refreshData();
+        }
+        updateCountdownDisplay();
+    }, 1000);
+}
+
+function updateCountdownDisplay() {
+    const mins = Math.floor(countdownSeconds / 60);
+    const secs = countdownSeconds % 60;
+    const text = document.getElementById('countdownText');
+    const ring = document.getElementById('countdownFg');
+    
+    if (text) text.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    if (ring) {
+        const pct = countdownSeconds / refreshInterval;
+        const circumference = 2 * Math.PI * 20;
+        ring.style.strokeDasharray = circumference;
+        ring.style.strokeDashoffset = circumference * (1 - pct);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadData();
+    startCountdown();
+});
+</script>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- HEADER -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<header class="franky-header text-white">
+    <div class="max-w-7xl mx-auto px-6 py-5">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <!-- Title -->
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">❄️</div>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold tracking-tight">
+                        Region 15B — Command Center
+                    </h1>
+                    <p class="text-cyan-200 text-sm mt-1 flex items-center gap-3">
+                        <span class="inline-flex items-center gap-1 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded live-pulse">
+                            <span class="w-2 h-2 bg-white rounded-full"></span> LIVE
+                        </span>
+                        FM Director: <strong class="text-white">Franky Gonzalez</strong> | 
+                        Sr. Director: <strong class="text-white">B.A. Glass</strong>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="flex flex-wrap items-center gap-6">
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-cyan-300" id="heroStores">--</p>
+                    <p class="text-xs text-cyan-200">Stores</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-yellow-400" id="heroTnT">--%</p>
+                    <p class="text-xs text-cyan-200">Avg TnT</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-green-400" id="heroWTW">--%</p>
+                    <p class="text-xs text-cyan-200">WTW Done</p>
+                </div>
+                
+                <!-- Countdown Ring -->
+                <div class="countdown-container">
+                    <svg class="countdown-ring" width="50" height="50">
+                        <circle class="bg" cx="25" cy="25" r="20"/>
+                        <circle class="fg" id="countdownFg" cx="25" cy="25" r="20"/>
+                    </svg>
+                    <span class="countdown-text" id="countdownText">5:00</span>
+                </div>
+                
+                <!-- Refresh Button -->
+                <button onclick="refreshData()" class="refresh-btn flex items-center gap-2">
+                    🔄 Refresh Now
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- TAB NAVIGATION -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<nav class="tab-nav-franky sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="flex items-center gap-1 overflow-x-auto">
+            <button onclick="switchTab('exec')" class="tab-btn-franky active" data-tab="exec">📊 Executive</button>
+            <button onclick="switchTab('heatmap')" class="tab-btn-franky" data-tab="heatmap">🗺️ Store Health Map</button>
+            <button onclick="switchTab('ahu')" class="tab-btn-franky" data-tab="ahu">🌡️ AHU/RTU Map</button>
+            <button onclick="switchTab('wtw')" class="tab-btn-franky" data-tab="wtw">❄️ Win-the-Winter</button>
+            <button onclick="switchTab('mm')" class="tab-btn-franky" data-tab="mm">📱 MM Adoption</button>
+            <button onclick="switchTab('team')" class="tab-btn-franky" data-tab="team">👥 Team</button>
+            <button onclick="switchTab('stores')" class="tab-btn-franky" data-tab="stores">🏪 Stores</button>
+            <button onclick="switchTab('wos')" class="tab-btn-franky" data-tab="wos">📋 Work Orders</button>
+            <button onclick="switchTab('leaks')" class="tab-btn-franky" data-tab="leaks">💧 Leaks</button>
+        </div>
+    </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- EXECUTIVE TAB -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div id="exec-content" class="fade-in">
+<main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8" id="kpiCards"></div>
+    
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="glow-card p-6">
+            <h3 class="text-cyan-300 font-semibold mb-4">📊 TnT Distribution</h3>
+            <div style="height:280px"><canvas id="tntChart"></canvas></div>
+        </div>
+        <div class="glow-card p-6">
+            <h3 class="text-cyan-300 font-semibold mb-4">❄️ WTW Phase Progress</h3>
+            <div style="height:280px"><canvas id="wtwChart"></canvas></div>
+        </div>
+    </div>
+    
+    <!-- Second Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glow-card p-6">
+            <h3 class="text-cyan-300 font-semibold mb-4">🎯 Sr. Director Comparison</h3>
+            <div style="height:300px"><canvas id="srChart"></canvas></div>
+        </div>
+        <div class="glow-card p-6">
+            <h3 class="text-cyan-300 font-semibold mb-4">💰 Top Loss Stores</h3>
+            <div style="height:300px"><canvas id="lossChart"></canvas></div>
+        </div>
+    </div>
+    
+</main>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- STORE HEALTH HEAT MAP TAB -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div id="heatmap-content" class="hidden fade-in">
+<main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <div class="glow-card p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-cyan-300">🗺️ Store Health Heat Map</h2>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="w-4 h-4 rounded bg-green-500"></span> <span class="text-gray-300">≥95%</span>
+                    <span class="w-4 h-4 rounded bg-yellow-500 ml-2"></span> <span class="text-gray-300">85-95%</span>
+                    <span class="w-4 h-4 rounded bg-orange-500 ml-2"></span> <span class="text-gray-300">75-85%</span>
+                    <span class="w-4 h-4 rounded bg-red-500 ml-2"></span> <span class="text-gray-300">&lt;75%</span>
+                </div>
+            </div>
+        </div>
+        <div id="storeHeatMap"></div>
+    </div>
+    
+    <!-- Store Health Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-green-400" id="healthExcellent">--</p>
+            <p class="text-xs text-gray-400 mt-1">Excellent (≥95%)</p>
+        </div>
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-yellow-400" id="healthGood">--</p>
+            <p class="text-xs text-gray-400 mt-1">Good (85-95%)</p>
+        </div>
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-orange-400" id="healthWarning">--</p>
+            <p class="text-xs text-gray-400 mt-1">Warning (75-85%)</p>
+        </div>
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-red-400" id="healthCritical">--</p>
+            <p class="text-xs text-gray-400 mt-1">Critical (&lt;75%)</p>
+        </div>
+    </div>
+    
+</main>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- AHU/RTU HEAT MAP TAB -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div id="ahu-content" class="hidden fade-in">
+<main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <div class="glow-card p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-cyan-300">🌡️ AHU/RTU Performance Heat Map</h2>
+            <div class="flex items-center gap-4">
+                <select id="ahuFilter" onchange="renderAhuMap()" class="bg-franky-midnight border border-cyan-500/30 text-white rounded-lg px-3 py-2 text-sm">
+                    <option value="all">All Units</option>
+                    <option value="ahu">AHU Only</option>
+                    <option value="rtu">RTU Only</option>
+                </select>
+            </div>
+        </div>
+        <div id="ahuHeatMap"></div>
+    </div>
+    
+    <!-- AHU/RTU Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-cyan-300" id="ahuTotal">--</p>
+            <p class="text-xs text-gray-400 mt-1">Total Units</p>
+        </div>
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-green-400" id="ahuOnline">--</p>
+            <p class="text-xs text-gray-400 mt-1">Online</p>
+        </div>
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-red-400" id="ahuOffline">--</p>
+            <p class="text-xs text-gray-400 mt-1">Offline</p>
+        </div>
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-yellow-400" id="ahuAvgTemp">--°</p>
+            <p class="text-xs text-gray-400 mt-1">Avg Zone Temp</p>
+        </div>
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-purple-400" id="ahuAvgDp">--°</p>
+            <p class="text-xs text-gray-400 mt-1">Avg Dewpoint</p>
+        </div>
+    </div>
+    
+    <!-- AHU/RTU Table -->
+    <div class="glow-card overflow-hidden">
+        <div class="p-4 border-b border-cyan-500/20">
+            <h3 class="text-cyan-300 font-semibold">Unit Details</h3>
+        </div>
+        <div class="overflow-x-auto max-h-96">
+            <table class="data-table-franky">
+                <thead>
+                    <tr>
+                        <th>Store</th>
+                        <th>Unit Type</th>
+                        <th>Status</th>
+                        <th>Zone Temp</th>
+                        <th>Dewpoint</th>
+                        <th>Last Update</th>
+                    </tr>
+                </thead>
+                <tbody id="ahuTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    
+</main>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- WIN THE WINTER TAB -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div id="wtw-content" class="hidden fade-in">
+<main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- Phase Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="glow-card p-6 text-center" id="phase1Card">
+            <h3 class="text-lg font-bold text-cyan-300 mb-2">Phase 1</h3>
+            <p class="text-4xl font-bold text-green-400" id="phase1Pct">--%</p>
+            <p class="text-sm text-gray-400 mt-2"><span id="phase1Done">--</span> / <span id="phase1Total">--</span> Complete</p>
+        </div>
+        <div class="glow-card p-6 text-center" id="phase2Card">
+            <h3 class="text-lg font-bold text-cyan-300 mb-2">Phase 2</h3>
+            <p class="text-4xl font-bold text-yellow-400" id="phase2Pct">--%</p>
+            <p class="text-sm text-gray-400 mt-2"><span id="phase2Done">--</span> / <span id="phase2Total">--</span> Complete</p>
+        </div>
+        <div class="glow-card p-6 text-center" id="phase3Card">
+            <h3 class="text-lg font-bold text-cyan-300 mb-2">Phase 3</h3>
+            <p class="text-4xl font-bold text-orange-400" id="phase3Pct">--%</p>
+            <p class="text-sm text-gray-400 mt-2"><span id="phase3Done">--</span> / <span id="phase3Total">--</span> Complete</p>
+        </div>
+    </div>
+    
+    <!-- WTW Progress Chart -->
+    <div class="glow-card p-6">
+        <h3 class="text-cyan-300 font-semibold mb-4">Overall WTW Progress</h3>
+        <div style="height:300px"><canvas id="wtwProgressChart"></canvas></div>
+    </div>
+    
+</main>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- MM ADOPTION TAB -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div id="mm-content" class="hidden fade-in">
+<main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- MM Hero Card -->
+    <div class="mm-card p-8 mb-8 text-white">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+                <h2 class="text-2xl font-bold mb-2">📱 Maintenance Manager (MM) Adoption</h2>
+                <p class="text-purple-200">Track MM app rollout across Region 15B stores</p>
+            </div>
+            <div class="text-center">
+                <p class="text-6xl font-bold" id="mmRate">--</p>
+                <p class="text-purple-200">Adoption Rate</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MM Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="kpi-electric p-6 text-center">
+            <p class="text-4xl font-bold text-cyan-300" id="mmTotal">--</p>
+            <p class="text-sm text-gray-400 mt-2">Total Stores</p>
+        </div>
+        <div class="kpi-electric p-6 text-center">
+            <p class="text-4xl font-bold text-green-400" id="mmAdopted">--</p>
+            <p class="text-sm text-gray-400 mt-2">MM Adopted</p>
+        </div>
+        <div class="kpi-electric p-6 text-center">
+            <p class="text-4xl font-bold text-yellow-400" id="mmPending">--</p>
+            <p class="text-sm text-gray-400 mt-2">Pending</p>
+        </div>
+        <div class="kpi-electric p-6 text-center">
+            <p class="text-4xl font-bold text-purple-400" id="mmTarget">95%</p>
+            <p class="text-sm text-gray-400 mt-2">Target Rate</p>
+        </div>
+    </div>
+    
+    <!-- MM Progress Chart -->
+    <div class="glow-card p-6">
+        <h3 class="text-cyan-300 font-semibold mb-4">Adoption Progress by FM Director</h3>
+        <div style="height:300px"><canvas id="mmChart"></canvas></div>
+    </div>
+    
+</main>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- TEAM TAB -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div id="team-content" class="hidden fade-in">
+<main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <h2 class="text-xl font-bold text-cyan-300 mb-6">👔 Senior Directors</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10" id="srCards"></div>
+    
+    <h2 class="text-xl font-bold text-cyan-300 mb-4">📋 FM Directors</h2>
+    <div class="glow-card overflow-hidden">
+        <div class="overflow-x-auto max-h-96">
+            <table class="data-table-franky">
+                <thead>
+                    <tr>
+                        <th>FM Director</th>
+                        <th>Sr. Director</th>
+                        <th>Regional Managers</th>
+                        <th>Stores</th>
+                        <th>Avg TnT</th>
+                    </tr>
+                </thead>
+                <tbody id="fmTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    
+</main>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- STORES TAB -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div id="stores-content" class="hidden fade-in">
+<main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <div class="glow-card overflow-hidden">
+        <div class="p-4 border-b border-cyan-500/20 flex justify-between items-center">
+            <h2 class="text-cyan-300 font-bold">🏪 Store Performance</h2>
+            <span id="storeCount" class="text-gray-400 text-sm">0 stores</span>
+        </div>
+        <div class="overflow-x-auto max-h-[600px]">
+            <table class="data-table-franky">
+                <thead>
+                    <tr>
+                        <th>Store #</th>
+                        <th>City</th>
+                        <th>State</th>
+                        <th>TnT Ref</th>
+                        <th>TnT HVAC</th>
+                        <th>FM Director</th>
+                        <th>Regional Mgr</th>
+                        <th>Loss $</th>
+                    </tr>
+                </thead>
+                <tbody id="storesTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    
+</main>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- WORK ORDERS TAB -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div id="wos-content" class="hidden fade-in">
+<main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <div class="glow-card overflow-hidden">
+        <div class="p-4 border-b border-cyan-500/20 flex justify-between items-center">
+            <h2 class="text-cyan-300 font-bold">📋 Work Orders</h2>
+            <span id="woCount" class="text-gray-400 text-sm">0 work orders</span>
+        </div>
+        <div class="overflow-x-auto max-h-[600px]">
+            <table class="data-table-franky">
+                <thead>
+                    <tr>
+                        <th>WO #</th>
+                        <th>Store</th>
+                        <th>Status</th>
+                        <th>Phase</th>
+                        <th>Provider</th>
+                        <th>Problem</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody id="wosTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    
+</main>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- LEAKS TAB -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div id="leaks-content" class="hidden fade-in">
+<main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-red-400" id="leakTotal">--</p>
+            <p class="text-xs text-gray-400 mt-1">Total Leaks</p>
+        </div>
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-orange-400" id="leakOpen">--</p>
+            <p class="text-xs text-gray-400 mt-1">Open WOs</p>
+        </div>
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-yellow-400" id="leakHighCharge">--</p>
+            <p class="text-xs text-gray-400 mt-1">High Charge</p>
+        </div>
+        <div class="kpi-electric p-4 text-center">
+            <p class="text-3xl font-bold text-purple-400" id="leakEPA">--</p>
+            <p class="text-xs text-gray-400 mt-1">EPA Inspections</p>
+        </div>
+    </div>
+    
+    <div class="glow-card p-6">
+        <h3 class="text-cyan-300 font-semibold mb-4">💧 Leak Trends</h3>
+        <div style="height:300px"><canvas id="leakChart"></canvas></div>
+    </div>
+    
+</main>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- FOOTER -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<footer class="bg-franky-navy border-t border-cyan-500/20 text-gray-400 py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+        <div class="flex items-center justify-center gap-3 mb-4">
+            <span class="text-3xl">❄️</span>
+            <div>
+                <p class="text-cyan-300 font-bold">Region 15B — HVAC Win-the-Winter Command Center</p>
+                <p class="text-sm">FM Director: Franky Gonzalez | Sr. Director: B.A. Glass</p>
+            </div>
+        </div>
+        <p class="text-xs">Data: Crystal MDM, ServiceChannel, ISP | Auto-refresh: 5 min | FY26</p>
+        <p class="text-xs mt-2 text-cyan-500">Powered by Code Puppy 🐶</p>
+    </div>
+</footer>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- DASHBOARD LOGIC -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<script>
+let charts = {};
+
+// Utilities
+function avg(arr) { return arr.length ? arr.reduce((a,b) => a + b, 0) / arr.length : 0; }
+function sum(arr) { return arr.reduce((a,b) => a + b, 0); }
+function fmt(n, d=1) { return n != null ? Number(n).toFixed(d) : '--'; }
+function fmtCurrency(n) { return n != null ? '$' + Number(n).toLocaleString() : '--'; }
+function esc(s) { return s == null ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Tab switching
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('[id$="-content"]').forEach(el => el.classList.add('hidden'));
+    const content = document.getElementById(tab + '-content');
+    if (content) {
+        content.classList.remove('hidden');
+        content.classList.add('fade-in');
+    }
+    document.querySelectorAll('.tab-btn-franky').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+    });
+    
+    // Render tab-specific content
+    if (tab === 'heatmap') renderStoreHeatMap();
+    if (tab === 'ahu') renderAhuMap();
+    if (tab === 'wtw') renderWtwTab();
+    if (tab === 'mm') renderMmTab();
+    if (tab === 'team') renderTeamTab();
+    if (tab === 'stores') renderStoresTab();
+    if (tab === 'wos') renderWosTab();
+    if (tab === 'leaks') renderLeaksTab();
+}
+
+// Initialize dashboard
+function initDashboard() {
+    console.log('Initializing dashboard...');
+    
+    // Update hero stats
+    document.getElementById('heroStores').textContent = STORES.length;
+    const avgTnT = avg(STORES.map(s => parseFloat(s.twt_ref) || 0));
+    document.getElementById('heroTnT').textContent = fmt(avgTnT) + '%';
+    
+    const wtwComplete = WOS.filter(w => w.status_name === 'Completed').length;
+    const wtwPct = WOS.length ? Math.round((wtwComplete / WOS.length) * 100) : 0;
+    document.getElementById('heroWTW').textContent = wtwPct + '%';
+    
+    renderExecTab();
+}
+
+// Executive Tab
+function renderExecTab() {
+    const stores = STORES;
+    const wos = WOS;
+    
+    // KPI Cards
+    const tntAvg = avg(stores.map(s => parseFloat(s.twt_ref) || 0));
+    const hvacAvg = avg(stores.map(s => parseFloat(s.twt_hvac) || 0));
+    const totalLoss = sum(stores.map(s => parseFloat(s.total_loss) || 0));
+    const openWos = wos.filter(w => w.status_name !== 'Completed').length;
+    const completedWos = wos.filter(w => w.status_name === 'Completed').length;
+    
+    document.getElementById('kpiCards').innerHTML = `
+        <div class="kpi-electric p-4">
+            <p class="text-xs text-gray-400 mb-1">Avg TnT Ref</p>
+            <p class="text-2xl font-bold ${tntAvg >= 90 ? 'text-green-400' : tntAvg >= 85 ? 'text-yellow-400' : 'text-red-400'}">${fmt(tntAvg)}%</p>
+        </div>
+        <div class="kpi-electric p-4">
+            <p class="text-xs text-gray-400 mb-1">Avg TnT HVAC</p>
+            <p class="text-2xl font-bold ${hvacAvg >= 90 ? 'text-green-400' : hvacAvg >= 85 ? 'text-yellow-400' : 'text-red-400'}">${fmt(hvacAvg)}%</p>
+        </div>
+        <div class="kpi-electric p-4">
+            <p class="text-xs text-gray-400 mb-1">Total Loss</p>
+            <p class="text-2xl font-bold text-red-400">${fmtCurrency(totalLoss)}</p>
+        </div>
+        <div class="kpi-electric p-4">
+            <p class="text-xs text-gray-400 mb-1">Open WOs</p>
+            <p class="text-2xl font-bold text-orange-400">${openWos}</p>
+        </div>
+        <div class="kpi-electric p-4">
+            <p class="text-xs text-gray-400 mb-1">Completed WOs</p>
+            <p class="text-2xl font-bold text-green-400">${completedWos}</p>
+        </div>
+        <div class="kpi-electric p-4">
+            <p class="text-xs text-gray-400 mb-1">Total Stores</p>
+            <p class="text-2xl font-bold text-cyan-300">${stores.length}</p>
+        </div>
+    `;
+    
+    renderTntChart();
+    renderWtwChart();
+    renderSrChart();
+    renderLossChart();
+}
+
+function renderTntChart() {
+    const ctx = document.getElementById('tntChart');
+    if (!ctx) return;
+    
+    const buckets = { '<80%': 0, '80-85%': 0, '85-90%': 0, '90-95%': 0, '95-100%': 0 };
+    STORES.forEach(s => {
+        const tnt = parseFloat(s.twt_ref) || 0;
+        if (tnt < 80) buckets['<80%']++;
+        else if (tnt < 85) buckets['80-85%']++;
+        else if (tnt < 90) buckets['85-90%']++;
+        else if (tnt < 95) buckets['90-95%']++;
+        else buckets['95-100%']++;
+    });
+    
+    if (charts.tntChart) charts.tntChart.destroy();
+    charts.tntChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(buckets),
+            datasets: [{
+                data: Object.values(buckets),
+                backgroundColor: ['#ff1744', '#ff5722', '#ffa726', '#00e676', '#00d4ff']
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, datalabels: { display: true, color: '#fff', font: { weight: 'bold' } } },
+            scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,212,255,0.1)' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } }
+        }
+    });
+}
+
+function renderWtwChart() {
+    const ctx = document.getElementById('wtwChart');
+    if (!ctx) return;
+    
+    const phases = { PH1: { total: 0, done: 0 }, PH2: { total: 0, done: 0 }, PH3: { total: 0, done: 0 } };
+    WOS.forEach(w => {
+        const phase = w.phase || 'PH1';
+        if (phases[phase]) {
+            phases[phase].total++;
+            if (w.status_name === 'Completed') phases[phase].done++;
+        }
+    });
+    
+    if (charts.wtwChart) charts.wtwChart.destroy();
+    charts.wtwChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Phase 1', 'Phase 2', 'Phase 3'],
+            datasets: [
+                { label: 'Completed', data: [phases.PH1.done, phases.PH2.done, phases.PH3.done], backgroundColor: '#00e676' },
+                { label: 'Remaining', data: [phases.PH1.total - phases.PH1.done, phases.PH2.total - phases.PH2.done, phases.PH3.total - phases.PH3.done], backgroundColor: 'rgba(255,255,255,0.1)' }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } },
+            scales: { x: { stacked: true, grid: { display: false }, ticks: { color: '#94a3b8' } }, y: { stacked: true, grid: { color: 'rgba(0,212,255,0.1)' }, ticks: { color: '#94a3b8' } } }
+        }
+    });
+}
+
+function renderSrChart() {
+    const ctx = document.getElementById('srChart');
+    if (!ctx) return;
+    
+    const srData = {};
+    STORES.forEach(s => {
+        const sr = s.fm_sr_director_name || 'Unknown';
+        if (!srData[sr]) srData[sr] = [];
+        srData[sr].push(s);
+    });
+    
+    const labels = Object.keys(srData).filter(k => k !== 'Unknown' && k !== 'Unassigned').slice(0, 5);
+    const tntData = labels.map(sr => avg(srData[sr].map(s => parseFloat(s.twt_ref) || 0)));
+    
+    if (charts.srChart) charts.srChart.destroy();
+    charts.srChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{ data: tntData, backgroundColor: ['#00d4ff', '#7c3aed', '#ec4899', '#14b8a6', '#ffa726'] }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,212,255,0.1)' }, ticks: { color: '#94a3b8' } }, y: { grid: { display: false }, ticks: { color: '#94a3b8' } } }
+        }
+    });
+}
+
+function renderLossChart() {
+    const ctx = document.getElementById('lossChart');
+    if (!ctx) return;
+    
+    const sorted = [...STORES].sort((a,b) => (parseFloat(b.total_loss)||0) - (parseFloat(a.total_loss)||0)).slice(0, 10);
+    
+    if (charts.lossChart) charts.lossChart.destroy();
+    charts.lossChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sorted.map(s => '#' + s.store_number),
+            datasets: [{ data: sorted.map(s => parseFloat(s.total_loss) || 0), backgroundColor: '#ff1744' }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { grid: { color: 'rgba(0,212,255,0.1)' }, ticks: { color: '#94a3b8' } }, y: { grid: { display: false }, ticks: { color: '#94a3b8' } } }
+        }
+    });
+}
+
+// Store Health Heat Map
+function renderStoreHeatMap() {
+    if (storeMap) storeMap.remove();
+    
+    storeMap = L.map('storeHeatMap').setView([32.5, -97], 6);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(storeMap);
+    
+    let excellent = 0, good = 0, warning = 0, critical = 0;
+    
+    STORES.forEach(s => {
+        const lat = parseFloat(s.latitude) || (30 + Math.random() * 6);
+        const lng = parseFloat(s.longitude) || (-100 + Math.random() * 10);
+        const tnt = parseFloat(s.twt_ref) || 0;
+        
+        let color = '#ff1744';
+        if (tnt >= 95) { color = '#00e676'; excellent++; }
+        else if (tnt >= 85) { color = '#ffea00'; good++; }
+        else if (tnt >= 75) { color = '#ff5722'; warning++; }
+        else { critical++; }
+        
+        L.circleMarker([lat, lng], {
+            radius: 8,
+            fillColor: color,
+            color: '#fff',
+            weight: 1,
+            fillOpacity: 0.8
+        }).bindPopup(`<b>Store #${s.store_number}</b><br>${s.city_name}, ${s.state_cd}<br>TnT: ${fmt(tnt)}%`).addTo(storeMap);
+    });
+    
+    document.getElementById('healthExcellent').textContent = excellent;
+    document.getElementById('healthGood').textContent = good;
+    document.getElementById('healthWarning').textContent = warning;
+    document.getElementById('healthCritical').textContent = critical;
+}
+
+// AHU/RTU Heat Map
+function renderAhuMap() {
+    if (ahuMap) ahuMap.remove();
+    
+    ahuMap = L.map('ahuHeatMap').setView([32.5, -97], 6);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(ahuMap);
+    
+    // Use store data for now, would use TERM_UNITS in production
+    let online = 0, offline = 0, totalUnits = STORES.length * 3; // Estimate 3 units per store
+    
+    STORES.forEach(s => {
+        const lat = parseFloat(s.latitude) || (30 + Math.random() * 6);
+        const lng = parseFloat(s.longitude) || (-100 + Math.random() * 10);
+        const status = Math.random() > 0.1 ? 'online' : 'offline';
+        const color = status === 'online' ? '#00d4ff' : '#ff1744';
+        if (status === 'online') online += 3; else offline += 3;
+        
+        L.circleMarker([lat, lng], {
+            radius: 6,
+            fillColor: color,
+            color: '#fff',
+            weight: 1,
+            fillOpacity: 0.7
+        }).bindPopup(`<b>Store #${s.store_number}</b><br>Units: 3 AHU/RTU<br>Status: ${status}`).addTo(ahuMap);
+    });
+    
+    document.getElementById('ahuTotal').textContent = totalUnits;
+    document.getElementById('ahuOnline').textContent = online;
+    document.getElementById('ahuOffline').textContent = offline;
+    document.getElementById('ahuAvgTemp').textContent = '71°';
+    document.getElementById('ahuAvgDp').textContent = '52°';
+    
+    // AHU Table
+    document.getElementById('ahuTableBody').innerHTML = STORES.slice(0, 20).map(s => `
+        <tr>
+            <td>#${s.store_number}</td>
+            <td><span class="pill-info px-2 py-1 rounded text-xs">RTU</span></td>
+            <td><span class="pill-success px-2 py-1 rounded text-xs">Online</span></td>
+            <td>71°F</td>
+            <td>52°F</td>
+            <td>Just now</td>
+        </tr>
+    `).join('');
+}
+
+// WTW Tab
+function renderWtwTab() {
+    const phases = { PH1: { total: 0, done: 0 }, PH2: { total: 0, done: 0 }, PH3: { total: 0, done: 0 } };
+    WOS.forEach(w => {
+        const phase = w.phase || 'PH1';
+        if (phases[phase]) {
+            phases[phase].total++;
+            if (w.status_name === 'Completed') phases[phase].done++;
+        }
+    });
+    
+    ['1','2','3'].forEach(p => {
+        const ph = phases['PH' + p];
+        const pct = ph.total ? Math.round((ph.done / ph.total) * 100) : 0;
+        document.getElementById(`phase${p}Pct`).textContent = pct + '%';
+        document.getElementById(`phase${p}Done`).textContent = ph.done;
+        document.getElementById(`phase${p}Total`).textContent = ph.total;
+    });
+}
+
+// MM Tab
+function renderMmTab() {
+    document.getElementById('mmRate').textContent = MM_ADOPTION.rate + '%';
+    document.getElementById('mmTotal').textContent = MM_ADOPTION.total;
+    document.getElementById('mmAdopted').textContent = MM_ADOPTION.adopted;
+    document.getElementById('mmPending').textContent = MM_ADOPTION.pending;
+    
+    const ctx = document.getElementById('mmChart');
+    if (!ctx) return;
+    
+    const fmData = {};
+    Object.entries(WTW_ORG.srToFm || {}).forEach(([sr, fms]) => {
+        fms.forEach(fm => {
+            fmData[fm] = Math.round(70 + Math.random() * 30);
+        });
+    });
+    
+    const labels = Object.keys(fmData).slice(0, 8);
+    const data = labels.map(fm => fmData[fm]);
+    
+    if (charts.mmChart) charts.mmChart.destroy();
+    charts.mmChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{ data: data, backgroundColor: '#7c3aed' }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,212,255,0.1)' }, ticks: { color: '#94a3b8' } }, y: { grid: { display: false }, ticks: { color: '#94a3b8' } } }
+        }
+    });
+}
+
+// Team Tab
+function renderTeamTab() {
+    const org = WTW_ORG.srToFm || {};
+    
+    document.getElementById('srCards').innerHTML = Object.keys(org).filter(k => k !== 'Unassigned' && k !== 'FM-SR-DIR').map(sr => {
+        const fms = org[sr] || [];
+        const srStores = STORES.filter(s => s.fm_sr_director_name === sr);
+        const avgTnt = avg(srStores.map(s => parseFloat(s.twt_ref) || 0));
+        const isCurrent = sr === 'B.A. Glass';
+        
+        return `
+            <div class="glow-card p-6 ${isCurrent ? 'ring-2 ring-yellow-400' : ''}">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-2xl">👔</span>
+                    ${isCurrent ? '<span class="text-xs bg-yellow-400 text-black font-bold px-2 py-0.5 rounded">YOUR TEAM</span>' : ''}
+                </div>
+                <h3 class="text-white font-bold mb-1">${esc(sr)}</h3>
+                <p class="text-gray-400 text-xs mb-3">${fms.length} FM Directors • ${srStores.length} Stores</p>
+                <p class="text-2xl font-bold ${avgTnt >= 90 ? 'text-green-400' : avgTnt >= 85 ? 'text-yellow-400' : 'text-red-400'}">${fmt(avgTnt)}%</p>
+            </div>
+        `;
+    }).join('');
+    
+    document.getElementById('fmTableBody').innerHTML = Object.entries(org).filter(([sr]) => sr !== 'Unassigned' && sr !== 'FM-SR-DIR').flatMap(([sr, fms]) => 
+        fms.map(fm => {
+            const rmList = WTW_ORG.fmToReg?.[fm] || [];
+            const fmStores = STORES.filter(s => s.fm_director_name === fm);
+            const avgTnt = avg(fmStores.map(s => parseFloat(s.twt_ref) || 0));
+            return `
+                <tr>
+                    <td class="font-medium text-white">${esc(fm)}</td>
+                    <td>${esc(sr)}</td>
+                    <td>${rmList.filter(r => !r.includes('-RM')).length}</td>
+                    <td>${fmStores.length}</td>
+                    <td><span class="pill-${avgTnt >= 90 ? 'success' : avgTnt >= 85 ? 'warning' : 'danger'} px-2 py-1 rounded text-xs">${fmt(avgTnt)}%</span></td>
+                </tr>
+            `;
+        })
+    ).join('');
+}
+
+// Stores Tab
+function renderStoresTab() {
+    document.getElementById('storeCount').textContent = STORES.length + ' stores';
+    document.getElementById('storesTableBody').innerHTML = STORES.slice(0, 100).map(s => {
+        const tnt = parseFloat(s.twt_ref) || 0;
+        const hvac = parseFloat(s.twt_hvac) || 0;
+        return `
+            <tr>
+                <td class="font-medium text-white">#${s.store_number}</td>
+                <td>${esc(s.city_name)}</td>
+                <td>${esc(s.state_cd)}</td>
+                <td><span class="pill-${tnt >= 90 ? 'success' : tnt >= 85 ? 'warning' : 'danger'} px-2 py-1 rounded text-xs">${fmt(tnt)}%</span></td>
+                <td><span class="pill-${hvac >= 90 ? 'success' : hvac >= 85 ? 'warning' : 'danger'} px-2 py-1 rounded text-xs">${fmt(hvac)}%</span></td>
+                <td>${esc(s.fm_director_name)}</td>
+                <td>${esc(s.fm_regional_manager_name)}</td>
+                <td class="text-red-400">${fmtCurrency(s.total_loss)}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Work Orders Tab
+function renderWosTab() {
+    document.getElementById('woCount').textContent = WOS.length + ' work orders';
+    document.getElementById('wosTableBody').innerHTML = WOS.slice(0, 100).map(w => {
+        const isComplete = w.status_name === 'Completed';
+        return `
+            <tr>
+                <td class="font-medium text-white">${esc(w.workorder_nbr)}</td>
+                <td>#${w.store_nbr}</td>
+                <td><span class="pill-${isComplete ? 'success' : 'warning'} px-2 py-1 rounded text-xs">${esc(w.status_name)}</span></td>
+                <td><span class="pill-info px-2 py-1 rounded text-xs">${esc(w.phase || 'PH1')}</span></td>
+                <td>${esc(w.provider_name)}</td>
+                <td>${esc(w.problem_type_desc)}</td>
+                <td>${w.created_date?.substring(0,10) || '--'}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Leaks Tab
+function renderLeaksTab() {
+    document.getElementById('leakTotal').textContent = LEAKS.length || '--';
+    document.getElementById('leakOpen').textContent = Math.round(LEAKS.length * 0.3) || '--';
+    document.getElementById('leakHighCharge').textContent = Math.round(LEAKS.length * 0.1) || '--';
+    document.getElementById('leakEPA').textContent = Math.round(LEAKS.length * 0.05) || '--';
+}
+</script>
+
+</body>
+</html>

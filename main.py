@@ -269,14 +269,10 @@ def background_refresh():
 
 @app.get("/full", response_class=HTMLResponse)
 async def full_dashboard(request: Request):
-    """Serve the FULL dblish-style dashboard with all features."""
-    html_path = TEMPLATES_DIR / "dblish_full.html"
+    """Serve FRANKY'S Command Center - unique and powerful."""
+    html_path = TEMPLATES_DIR / "franky_command_center.html"
     if html_path.exists():
         content = html_path.read_text(encoding="utf-8")
-        # Update generated timestamp
-        from datetime import datetime
-        now = datetime.now().strftime("%Y-%m-%d %H:%M")
-        content = content.replace("2026-02-19 16:26", now)
         return HTMLResponse(content=content)
     return HTMLResponse("<h1>Dashboard not found</h1>", status_code=404)
 
