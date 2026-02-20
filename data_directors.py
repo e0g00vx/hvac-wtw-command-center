@@ -106,6 +106,41 @@ SN_DIRECTOR_TRENDS = {
 # Backwards compatibility alias
 BU_DIRECTOR_TRENDS = SN_DIRECTOR_TRENDS
 
+# Historical TnT data (last 12 months)
+HISTORICAL_TNT = [
+    {"month": "Mar", "tnt": 87.2, "wos": 72},
+    {"month": "Apr", "tnt": 87.9, "wos": 69},
+    {"month": "May", "tnt": 88.5, "wos": 65},
+    {"month": "Jun", "tnt": 89.1, "wos": 62},
+    {"month": "Jul", "tnt": 89.8, "wos": 59},
+    {"month": "Aug", "tnt": 90.2, "wos": 56},
+    {"month": "Sep", "tnt": 90.7, "wos": 54},
+    {"month": "Oct", "tnt": 91.1, "wos": 52},
+    {"month": "Nov", "tnt": 91.4, "wos": 50},
+    {"month": "Dec", "tnt": 91.7, "wos": 48},
+    {"month": "Jan", "tnt": 91.9, "wos": 47},
+    {"month": "Feb", "tnt": 92.1, "wos": 47},
+]
+
+# Trend months for comparison chart
+TREND_MONTHS = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]
+
+# Work Order Categories
+WO_CATEGORIES = {
+    "preventive": {"count": 156, "pct": 45},
+    "reactive": {"count": 89, "pct": 26},
+    "emergency": {"count": 34, "pct": 10},
+    "project": {"count": 67, "pct": 19},
+}
+
+# Milestones & Achievements
+MILESTONES = [
+    {"type": "achievement", "event": "Reached 92% TnT", "date": "Feb 2026"},
+    {"type": "milestone", "event": "100 Days Zero Safety", "date": "Jan 2026"},
+    {"type": "success", "event": "All Aged WOs Cleared", "date": "Dec 2025"},
+    {"type": "achievement", "event": "#1 Region Ranking", "date": "Nov 2025"},
+]
+
 # ══════════════════════════════════════════════════════════════════════
 # ALIASES FOR BACKWARDS COMPATIBILITY
 # ══════════════════════════════════════════════════════════════════════
