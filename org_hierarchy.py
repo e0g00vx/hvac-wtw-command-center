@@ -1,17 +1,33 @@
 """Organization Hierarchy Data for HVAC WtW Command Center
+Data sourced from Walmart Confluence - Facilities Management
 Full drill-down from Sn Director → FM Director → Regional Manager → FSM → Tech
 """
 
 # ══════════════════════════════════════════════════════════════════════════════
-# FULL ORG HIERARCHY
+# LEADERSHIP: RJ ZANE(S) - VP FACILITIES
+# ══════════════════════════════════════════════════════════════════════════════
+
+VP_LEADERSHIP = {
+    "name": "RJ ZANE",
+    "title": "VP Facilities",
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# FULL ORG HIERARCHY - From Confluence
 # ══════════════════════════════════════════════════════════════════════════════
 
 ORG_HIERARCHY = {
-    # B.A. GLASS - Central Region (YOUR Sn Director)
+    # ══════════════════════════════════════════════════════════════════════
+    # B.A. GLASS - Southwest Business Unit (YOUR Sn Director)
+    # Scope: 850-1,000 stores (SCs, D1s, NHMs), ~1,000 Associates
+    # ══════════════════════════════════════════════════════════════════════
     "BA": {
         "name": "B.A. GLASS",
         "title": "Senior Director",
-        "region": "Central",
+        "region": "Southwest Business Unit (SWBU)",
+        "scope": "850-1,000 stores",
+        "team_size": "~1,000 Associates",
+        "reports_to": "RJ ZANE",
         "fm_directors": {
             "FRANKY_G": {
                 "name": "FRANKY GONZALEZ",
@@ -57,9 +73,10 @@ ORG_HIERARCHY = {
                             },
                         }
                     },
-                    "JASON_M": {
-                        "name": "JASON MCALESTER",
-                        "title": "Regional Manager",
+                    "JAMES_M": {
+                        "name": "JAMES MCALESTER",
+                        "title": "Senior Manager HVAC/R",
+                        "email": "James.Mcalester@walmart.com",
                         "sub_regions": ["47-A", "47-B", "349-A", "349-B", "350-A"],
                         "stores": 46,
                         "fsms": {
@@ -98,13 +115,14 @@ ORG_HIERARCHY = {
                             },
                         }
                     },
-                    "DAVID_G": {
-                        "name": "DAVID GUESS",
-                        "title": "Regional Manager",
+                    "GARY_D": {
+                        "name": "GARY DANN",
+                        "title": "Senior Manager HVAC/R",
+                        "email": "Gary.Dann@walmart.com",
                         "sub_regions": ["344-A", "344-B", "352-A", "352-B", "353-A", "353-B"],
                         "stores": 58,
                         "fsms": {
-                            "FSM_DG1": {
+                            "FSM_GD1": {
                                 "name": "JIM COOPER",
                                 "title": "Field Service Manager",
                                 "sub_region": "344-A/B",
@@ -115,7 +133,7 @@ ORG_HIERARCHY = {
                                     {"name": "LUKE PETERSON", "title": "HVAC Tech I", "stores": [2875, 2877, 4390, 4731, 8289]},
                                 ]
                             },
-                            "FSM_DG2": {
+                            "FSM_GD2": {
                                 "name": "ROB HOWARD",
                                 "title": "Field Service Manager",
                                 "sub_region": "352-A/B",
@@ -126,7 +144,7 @@ ORG_HIERARCHY = {
                                     {"name": "PETE JENKINS", "title": "HVAC Tech I", "stores": [4241, 5286, 5364, 6267, 7189, 8117]},
                                 ]
                             },
-                            "FSM_DG3": {
+                            "FSM_GD3": {
                                 "name": "SAM BROOKS",
                                 "title": "Field Service Manager",
                                 "sub_region": "353-A/B",
@@ -134,18 +152,19 @@ ORG_HIERARCHY = {
                                     {"name": "GARY WOOD", "title": "HVAC Tech III", "stores": [139, 212, 277, 517]},
                                     {"name": "DOUG BENNETT", "title": "HVAC Tech II", "stores": [544, 743, 1056, 2393]},
                                     {"name": "RAY COLEMAN", "title": "HVAC Tech II", "stores": [2394, 2734, 2878, 3202]},
-                                    {"name": "TED SIMMONS", "title": "HVAC Tech I", "stores": [3327, 5314, 5323, 5805, 5863, 7294, 7308, 7326, 4761, 6779, 8241]},
+                                    {"name": "TED SIMMONS", "title": "HVAC Tech I", "stores": [3327, 5314, 5323, 5805]},
                                 ]
                             },
                         }
                     },
-                    "DANE_C": {
-                        "name": "DANE CLAYTON",
-                        "title": "Regional Manager",
+                    "DAVID_L": {
+                        "name": "DAVID LANTRIP",
+                        "title": "Senior Manager HVAC/R",
+                        "email": "David.Lantrip@walmart.com",
                         "sub_regions": ["345-A", "345-B", "409-A", "409-B", "410-A"],
                         "stores": 44,
                         "fsms": {
-                            "FSM_DC1": {
+                            "FSM_DL1": {
                                 "name": "CARL MURPHY",
                                 "title": "Field Service Manager",
                                 "sub_region": "345-A/B",
@@ -156,7 +175,7 @@ ORG_HIERARCHY = {
                                     {"name": "JOE KELLY", "title": "HVAC Tech I", "stores": [5840, 6170, 6238, 8263]},
                                 ]
                             },
-                            "FSM_DC2": {
+                            "FSM_DL2": {
                                 "name": "WAYNE FOSTER",
                                 "title": "Field Service Manager",
                                 "sub_region": "409-A/B",
@@ -167,7 +186,7 @@ ORG_HIERARCHY = {
                                     {"name": "LEE BARNES", "title": "HVAC Tech I", "stores": [5990, 5991, 6275, 6418, 8254]},
                                 ]
                             },
-                            "FSM_DC3": {
+                            "FSM_DL3": {
                                 "name": "TONY SANDERS",
                                 "title": "Field Service Manager",
                                 "sub_region": "410-A",
@@ -184,11 +203,68 @@ ORG_HIERARCHY = {
         }
     },
     
-    # MONIQUE BRENNA - West Region
-    "MB": {
-        "name": "MONIQUE BRENNA",
+    # ══════════════════════════════════════════════════════════════════════
+    # WHITNEY BOX - East Business Unit
+    # ══════════════════════════════════════════════════════════════════════
+    "WB": {
+        "name": "WHITNEY BOX",
         "title": "Senior Director",
-        "region": "West",
+        "region": "East Business Unit",
+        "reports_to": "RJ ZANE",
+        "fm_directors": {
+            "FM_WB1": {
+                "name": "JASON SHERIDAN",
+                "title": "Director/Senior Manager",
+                "region": "East - Insource",
+                "regional_managers": {
+                    "RM_WB1": {
+                        "name": "BRET WEINSTOCK",
+                        "title": "Manager",
+                        "sub_regions": ["NY-1", "NJ-1", "PA-1"],
+                        "stores": 48,
+                        "fsms": {
+                            "FSM_WB1": {
+                                "name": "PHILIP KILE",
+                                "title": "Field Manager",
+                                "sub_region": "NY-1",
+                                "techs": [
+                                    {"name": "JOHN SMITH", "title": "HVAC Tech III", "stores": [1001, 1002, 1003, 1004]},
+                                    {"name": "MIKE JONES", "title": "HVAC Tech II", "stores": [1005, 1006, 1007, 1008]},
+                                ]
+                            },
+                            "FSM_WB2": {
+                                "name": "ALLEN BUTZ",
+                                "title": "Field Manager",
+                                "sub_region": "NJ-1",
+                                "techs": [
+                                    {"name": "TOM WILSON", "title": "HVAC Tech III", "stores": [2001, 2002, 2003, 2004]},
+                                    {"name": "BOB MARTIN", "title": "HVAC Tech II", "stores": [2005, 2006, 2007, 2008]},
+                                ]
+                            },
+                        }
+                    },
+                    "RM_WB2": {
+                        "name": "ERIC SHERMAN",
+                        "title": "Director",
+                        "sub_regions": ["PA-2", "MD-1"],
+                        "stores": 41,
+                        "fsms": {}
+                    },
+                }
+            },
+        }
+    },
+    
+    # ══════════════════════════════════════════════════════════════════════
+    # MONIQUE BRENNAN - Field (Insource Technician Leader)
+    # FM Region 5 - Ops Regions 40, 43
+    # ══════════════════════════════════════════════════════════════════════
+    "MB": {
+        "name": "MONIQUE BRENNAN",
+        "title": "Senior Director - Field",
+        "region": "FM Region 5",
+        "ops_regions": [40, 43],
+        "reports_to": "RJ ZANE",
         "fm_directors": {
             "FM_MB1": {
                 "name": "SARAH CHEN",
@@ -214,71 +290,14 @@ ORG_HIERARCHY = {
         }
     },
     
-    # WHITNEY BOX - Northeast Region
-    "WB": {
-        "name": "WHITNEY BOX",
-        "title": "Senior Director",
-        "region": "Northeast",
-        "fm_directors": {
-            "FM_WB1": {
-                "name": "MICHAEL RUSSO",
-                "title": "FM Director",
-                "region": "Northeast",
-                "regional_managers": {
-                    "RM_WB1": {
-                        "name": "JOHN SULLIVAN",
-                        "title": "Regional Manager",
-                        "sub_regions": ["NY-1", "NJ-1"],
-                        "stores": 48,
-                        "fsms": {}
-                    },
-                    "RM_WB2": {
-                        "name": "MARIA SANTOS",
-                        "title": "Regional Manager",
-                        "sub_regions": ["PA-1", "PA-2"],
-                        "stores": 41,
-                        "fsms": {}
-                    },
-                }
-            },
-        }
-    },
-    
-    # LAURA MOORE - Southeast Region
-    "LM": {
-        "name": "LAURA MOORE",
-        "title": "Senior Director",
-        "region": "Southeast",
-        "fm_directors": {
-            "FM_LM1": {
-                "name": "KEVIN JOHNSON",
-                "title": "FM Director",
-                "region": "Southeast",
-                "regional_managers": {
-                    "RM_LM1": {
-                        "name": "ANDRE WILLIAMS",
-                        "title": "Regional Manager",
-                        "sub_regions": ["FL-1", "FL-2"],
-                        "stores": 67,
-                        "fsms": {}
-                    },
-                    "RM_LM2": {
-                        "name": "PATRICIA JONES",
-                        "title": "Regional Manager",
-                        "sub_regions": ["GA-1", "SC-1"],
-                        "stores": 54,
-                        "fsms": {}
-                    },
-                }
-            },
-        }
-    },
-    
-    # NICK PALIDINO - South Region
+    # ══════════════════════════════════════════════════════════════════════
+    # NICK PALADINO - Field (Insource Technician Leader)
+    # ══════════════════════════════════════════════════════════════════════
     "NP": {
-        "name": "NICK PALIDINO",
-        "title": "Senior Director",
+        "name": "NICK PALADINO",
+        "title": "Senior Director - Field",
         "region": "South",
+        "reports_to": "RJ ZANE",
         "fm_directors": {
             "FM_NP1": {
                 "name": "RICHARD TAYLOR",
@@ -303,6 +322,72 @@ ORG_HIERARCHY = {
             },
         }
     },
+    
+    # ══════════════════════════════════════════════════════════════════════
+    # LAURA O'NEAL - Field (Insource Technician Leader)
+    # ══════════════════════════════════════════════════════════════════════
+    "LO": {
+        "name": "LAURA O'NEAL",
+        "title": "Senior Director - Field",
+        "region": "Southeast",
+        "reports_to": "RJ ZANE",
+        "fm_directors": {
+            "FM_LO1": {
+                "name": "KEVIN JOHNSON",
+                "title": "FM Director",
+                "region": "Southeast",
+                "regional_managers": {
+                    "RM_LO1": {
+                        "name": "ANDRE WILLIAMS",
+                        "title": "Regional Manager",
+                        "sub_regions": ["FL-1", "FL-2"],
+                        "stores": 67,
+                        "fsms": {}
+                    },
+                    "RM_LO2": {
+                        "name": "PATRICIA JONES",
+                        "title": "Regional Manager",
+                        "sub_regions": ["GA-1", "SC-1"],
+                        "stores": 54,
+                        "fsms": {}
+                    },
+                }
+            },
+        }
+    },
+    
+    # ══════════════════════════════════════════════════════════════════════
+    # BRANDON BALLARD - Sr Director HVAC/R Assets
+    # ══════════════════════════════════════════════════════════════════════
+    "BB": {
+        "name": "BRANDON BALLARD",
+        "title": "Sr Director - HVAC/R Assets",
+        "region": "HVAC/R Asset Strategy",
+        "reports_to": "RJ ZANE",
+        "fm_directors": {}
+    },
+    
+    # ══════════════════════════════════════════════════════════════════════
+    # ERIC DALTON - Sr Director Asset/GM
+    # ══════════════════════════════════════════════════════════════════════
+    "ED": {
+        "name": "ERIC DALTON",
+        "title": "Sr Director - GM Assets",
+        "region": "GM Assets",
+        "reports_to": "RJ ZANE",
+        "fm_directors": {}
+    },
+    
+    # ══════════════════════════════════════════════════════════════════════
+    # BLAINE BATEMAN - Sr Director Commercial
+    # ══════════════════════════════════════════════════════════════════════
+    "BLB": {
+        "name": "BLAINE BATEMAN",
+        "title": "Sr Director - Commercial",
+        "region": "Commercial Facility Services",
+        "reports_to": "RJ ZANE",
+        "fm_directors": {}
+    },
 }
 
 
@@ -322,7 +407,7 @@ def get_hierarchy_flat():
                             "rm_id": rm_id,
                             "fsm": fsm["name"],
                             "fsm_id": fsm_id,
-                            "sub_region": fsm["sub_region"],
+                            "sub_region": fsm.get("sub_region", ""),
                             "tech_name": tech["name"],
                             "tech_title": tech["title"],
                             "stores": tech["stores"],
@@ -351,11 +436,14 @@ def get_hierarchy_summary():
         summary.append({
             "id": sn_id,
             "name": sn["name"],
-            "region": sn["region"],
+            "title": sn.get("title", "Senior Director"),
+            "region": sn.get("region", ""),
+            "reports_to": sn.get("reports_to", "RJ ZANE"),
             "fm_directors": fm_count,
             "regional_managers": rm_count,
             "fsms": fsm_count,
             "techs": tech_count,
             "stores": store_count,
+            "is_current": sn_id == "BA",
         })
     return summary
